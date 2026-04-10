@@ -2,7 +2,7 @@
 
 Mobile-optimized prehospital medical protocol reference for AMR Linn County, Kansas. Built for field use — fast, offline-capable, no app install required.
 
-**Live site:** https://amr-kc-protocols.github.io/amr-kc-protocols/linn-county/
+**Live site:** https://amr-kc-protocols.github.io/linn-county-protocols/
 
 ---
 
