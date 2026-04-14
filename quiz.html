@@ -218,6 +218,12 @@ function renderQuizResults(){
 var QS={level:null,questions:[],current:0,score:0,history:[],missedIds:[],view:'home'};
 renderQuiz();
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(function(err) { console.warn('SW registration failed:', err); });
+  });
+}
 </script>
 </body>
 </html>
