@@ -27,7 +27,7 @@ function renderFormulary(q){
   const c=document.getElementById('content');
   const f=q?FORMULARY.filter(d=>d.name.toLowerCase().includes(q)||d.cls.toLowerCase().includes(q)||(d.dose&&d.dose.toLowerCase().includes(q))):FORMULARY;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+(q)+'"</div></div>';return;}
-  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card card-appear" style="animation-delay:'+(i*.02)+'s"><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body"><div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>${d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">${d.ci}</span></div>':\'\'}${d.warn?'<div class="drug-warn">⚠ ${d.warn}</div>':\'\'}</div></div>').join('')+'</div>';
+  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card card-appear" style="animation-delay:'+(i*.02)+'s"><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body"><div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>').join('')+'</div>';
 }
 
 function renderScope(){
@@ -68,8 +68,8 @@ function calcMAIDoses(){
     {name:'Midazolam (Post-intubation sedation)',detail:'2.5–5 mg IV every 10–30 min',lo:2.5,hi:5,unit:'mg',note:'Fixed dose — not weight-based.'},
     {name:'Lidocaine (IO site analgesia)',detail:'40 mg IO slow push → 10 mL NS → 20 mg IO',lo:40,hi:null,unit:'mg',note:'Fixed adult dose. Peds: 0.5 mg/kg (max 40 mg).'}
   ];
-  el.innerHTML='<div style="font-family:\'Courier Prime\',monospace;font-size:11px;color:var(--clay);margin-bottom:6px">Patient weight: '+(kg.toFixed(1))+' kg${maiUnit===\'lbs\'?' (${raw} lbs)':\'\'}</div>'+
-  drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">${d.hi?'${d.lo.toFixed(1)}–${d.hi.toFixed(1)}':'${d.lo.toFixed(1)}'} <span>'+(d.unit)+'</span></div><div style="font-size:11px;color:var(--clay);margin-top:3px">'+(d.note)+'</div></div>').join('');
+  el.innerHTML='<div style="font-family:\'Courier Prime\',monospace;font-size:11px;color:var(--clay);margin-bottom:6px">Patient weight: '+(kg.toFixed(1))+' kg'+(maiUnit==='lbs'?' ('+raw+' lbs)':'')+'</div>'+
+  drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">'+(d.hi?(d.lo.toFixed(1)+'–'+d.hi.toFixed(1)):d.lo.toFixed(1))+' <span>'+(d.unit)+'</span></div>'+'<div style="font-size:11px;color:var(--clay);margin-top:3px">'+(d.note)+'</div></div>').join('');
 }
 
 function render(){
