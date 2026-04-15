@@ -41,8 +41,8 @@ function submitToSheets(data) {
   fetch(SHEETS_URL, {
     method: 'POST',
     mode: 'no-cors',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(data)
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'payload=' + encodeURIComponent(JSON.stringify(data))
   }).catch(function(err) { console.warn('Sheets submit failed:', err); });
 }
 // ─────────────────────────────────────────────────────────────
