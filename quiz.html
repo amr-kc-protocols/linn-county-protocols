@@ -32,6 +32,21 @@
 <div id="content"></div>
 <script>
 
+// ── GOOGLE SHEETS INTEGRATION ─────────────────────────────────
+// Paste your Apps Script Web App URL here after deploying:
+var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxzKrWJyvzAtaswxzsZirJKST_GQKBMPlGi-DP-YVzWWzfeqDsiGRvptLCAzW1UoAM/exec';
+
+function submitToSheets(data) {
+  if (!SHEETS_URL) return;
+  fetch(SHEETS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  }).catch(function(err) { console.warn('Sheets submit failed:', err); });
+}
+// ─────────────────────────────────────────────────────────────
+
 var QD={
 emt:[
 {id:1,cat:"Scope",type:"mc",q:"Which skill is authorized at ALL levels (EMT, AEMT, and PM) under Linn County protocols?",opts:["A. Peripheral IV insertion","B. Manual defibrillation","C. CPAP","D. Transcutaneous pacing"],ans:2,exp:"CPAP is authorized at All Levels under Linn County protocols per Dr. Deshmukh. Peripheral IV is AEMT+, manual defibrillation is AEMT+, and transcutaneous pacing is PM only."},
@@ -203,6 +218,16 @@ function renderQuizResults(){
   var cats={};QS.history.forEach(h=>{if(!cats[h.cat])cats[h.cat]={t:0,c:0};cats[h.cat].t++;if(h.correct)cats[h.cat].c++;});
   var catHtml=Object.keys(cats).sort().map(cat=>{var d=cats[cat],p=Math.round((d.c/d.t)*100),col=p>=80?'var(--sage)':p>=60?'var(--gold)':'var(--rust)';return'<div class="qr-cat-row"><div class="qr-cat-name">'+(cat)+'</div><div class="qr-cat-sc">'+(d.c)+'/'+(d.t)+'</div><div class="qr-bar-wrap"><div class="qr-bar" style="width:'+(p)+'%;background:'+(col)+'"></div></div></div>';}).join('');
   var missed=QS.history.filter(h=>!h.correct);QS.missedIds=missed.map(h=>h.id);
+  submitToSheets({
+    date: new Date().toISOString(),
+    level: ll,
+    score: QS.score,
+    total: total,
+    pct: pct,
+    grade: grade,
+    cats: Object.keys(cats).sort().map(function(c){return c+': '+cats[c].c+'/'+cats[c].t;}).join(', '),
+    missed: missed.map(function(m){return m.q;}).join(' | ')
+  });
   var missedHtml=missed.length===0?'<div style="text-align:center;padding:20px;color:var(--sage);font-family:\'Playfair Display\',serif;font-size:16px">Perfect score — outstanding!</div>':
     '<div class="qr-sec-label">MISSED QUESTIONS ('+(missed.length)+')</div>'+missed.map(ms=>'<div class="qr-missed-item"><div class="qr-missed-q">'+(ms.q)+'</div><div class="qr-missed-ans">Correct: '+(ms.correctOpt)+'</div><div class="qr-missed-exp">'+(ms.exp)+'</div></div>').join('');
   document.getElementById('content').innerHTML='\n  <div class="quiz-results-hdr"><div class="qr-level">'+(ll)+' LEVEL</div><div class="qr-title">Quiz Complete</div><div class="qr-score">'+(QS.score)+'<span class="qr-denom">/'+(total)+'</span></div><div class="qr-pct">'+(pct)+'%</div><div class="qr-grade">'+(grade)+'</div></div>\n  <div class="quiz-results-body">\n  <div class="qr-breakdown"><div class="qr-bdi"><div class="qr-bdi-num c">'+(QS.score)+'</div><div class="qr-bdi-label">Correct</div></div><div class="qr-bdi"><div class="qr-bdi-num w">'+(total-QS.score)+'</div><div class="qr-bdi-label">Incorrect</div></div></div>\n  <div style="margin-bottom:20px"><div class="qr-sec-label">BY CATEGORY</div>'+(catHtml)+'</div>\n  <div style="margin-bottom:20px">'+(missedHtml)+'</div>\n  <div class="qr-actions">\n  <button class="qr-btn primary" id="qr-retry">Retry Full Quiz</button>\n  '+(missed.length?'<button class="qr-btn ghost" id="qr-missed">Retry Missed ('+missed.length+')</button>':'')+'\n  <button class="qr-btn secondary" id="qr-home">Choose Level</button>\n  </div></div>';
