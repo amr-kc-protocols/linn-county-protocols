@@ -34,7 +34,7 @@ function doPost(e) {
            .setFontColor('#D4A96A');
     }
 
-    var data = JSON.parse(e.postData.contents);
+    var data = JSON.parse(e.parameter.payload);
 
     sheet.appendRow([
       new Date(data.date),   // Timestamp
