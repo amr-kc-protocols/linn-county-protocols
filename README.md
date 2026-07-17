@@ -59,7 +59,8 @@ linn-county/
 ├── data.js       # Protocol data, formulary, scope, OPS data
 ├── app.js        # Render logic and event handlers
 ├── sw.js         # Service worker — offline caching
-└── quiz.html     # Self-contained quiz app
+├── quiz.html     # Self-contained quiz app
+└── vercel.json   # Vercel hosting config (caching headers)
 ```
 
 ---
@@ -80,6 +81,22 @@ Use **"Add file" → "Upload files"** — drag all 6 files at once. Do **not** u
 ### Deploying Updates (Cache Busting)
 
 The service worker caches all app files on first load. When you push updated files, **bump `CACHE_VERSION`** at the top of `sw.js` (e.g. `linn-ems-v1` → `linn-ems-v2`). This forces users' browsers to fetch the new files on their next visit instead of serving the stale cached version.
+
+---
+
+## Deploying on Vercel
+
+The app is a plain static site (no build step), so Vercel hosting is one-time setup:
+
+1. Go to [vercel.com/new](https://vercel.com/new) and sign in with GitHub.
+2. Import the `linn-county-protocols` repository.
+3. Leave every setting at its default — **Framework Preset: Other**, no build command, no output directory. Click **Deploy**.
+
+That's it. Vercel serves the files as-is and gives you a `*.vercel.app` URL (a custom domain can be added under Project → Settings → Domains). Every push to the production branch auto-deploys within seconds; pushes to other branches get preview URLs.
+
+The included `vercel.json` sets `Cache-Control: no-cache` on `sw.js` so browsers always check for a new service worker — updates still require the `CACHE_VERSION` bump described above, but they'll never be blocked by a stale `sw.js` itself.
+
+All asset paths in the app are relative, so GitHub Pages and Vercel can run side by side from the same repo.
 
 ---
 
