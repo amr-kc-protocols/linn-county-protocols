@@ -1,6 +1,8 @@
 
 let currentTab='protocols',searchQuery='';
 
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
 // ── RENDER FUNCTIONS ─────────────────────────────────────────
 function getScopeClass(s){
   if(!s)return'scope-all';const l=s.toLowerCase();
@@ -19,31 +21,36 @@ function renderProtocols(q){
     html+='<div class="section-header"><span class="section-icon">'+sec.icon+'</span><span class="section-label">'+sec.section+'</span></div>';
     f.forEach((item,i)=>{html+='<div class="protocol-card card-appear" style="animation-delay:'+(i*.03)+'s" data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron">›</span></div></div>';});
   });
-  if(!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No protocols match "'+(q)+'"</div></div>';
+  if(!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No protocols match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
 }
 
 function renderFormulary(q){
   const c=document.getElementById('content');
   const f=q?FORMULARY.filter(d=>d.name.toLowerCase().includes(q)||d.cls.toLowerCase().includes(q)||(d.dose&&d.dose.toLowerCase().includes(q))):FORMULARY;
-  if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+(q)+'"</div></div>';return;}
+  if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+esc(q)+'"</div></div>';return;}
   c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card card-appear" style="animation-delay:'+(i*.02)+'s"><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body"><div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>').join('')+'</div>';
 }
 
-function renderScope(){
+function renderScope(q){
   const c=document.getElementById('content');
   const cats=[{label:'Airway & Ventilation',key:'airway'},{label:'Circulation',key:'circulation'},{label:'Vascular Access',key:'vascular'},{label:'Medication Administration',key:'meds'},{label:'Trauma & Hemorrhage',key:'trauma'},{label:'Other',key:'other'}];
-  let html='<div class="legend-bar"><span class="legend-item"><span class="legend-dot" style="background:var(--scope-emt)"></span>EMT</span><span class="legend-item"><span class="legend-dot" style="background:var(--scope-aemt)"></span>AEMT</span><span class="legend-item"><span class="legend-dot" style="background:var(--scope-pm)"></span>PM</span></div>';
+  let html='<div class="legend-bar"><span class="legend-item"><span class="legend-dot" style="background:var(--scope-emt)"></span>EMT</span><span class="legend-item"><span class="legend-dot" style="background:var(--scope-aemt)"></span>AEMT</span><span class="legend-item"><span class="legend-dot" style="background:var(--scope-pm)"></span>PM</span></div>',shown=0;
   cats.forEach(cat=>{
+    const rows=q?SCOPE_DATA[cat.key].filter(r=>r.skill.toLowerCase().includes(q)):SCOPE_DATA[cat.key];
+    if(!rows.length)return;shown+=rows.length;
     html+='<div class="section-header"><span class="section-label">'+(cat.label)+'</span></div>';
-    SCOPE_DATA[cat.key].forEach(row=>{html+='<div style="display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(--bark);gap:8px"><div style="flex:1;font-size:16px;color:var(--parchment)">'+(row.skill)+'</div><div style="display:flex;gap:4px"><span style="width:36px;text-align:center;font-family:\'Courier Prime\',monospace;font-size:12px;font-weight:700;padding:3px 0;border-radius:2px;background:'+(row.emt?'var(--scope-emt)':'var(--bark)')+';color:'+(row.emt?'#d4edda':'var(--clay)')+'">EMT</span><span style="width:44px;text-align:center;font-family:\'Courier Prime\',monospace;font-size:12px;font-weight:700;padding:3px 0;border-radius:2px;background:'+(row.aemt?'var(--scope-aemt)':'var(--bark)')+';color:'+(row.aemt?'#cce5ff':'var(--clay)')+'">AEMT</span><span style="width:28px;text-align:center;font-family:\'Courier Prime\',monospace;font-size:12px;font-weight:700;padding:3px 0;border-radius:2px;background:'+(row.pm?'var(--scope-pm)':'var(--bark)')+';color:'+(row.pm?'#f8d7da':'var(--clay)')+'">PM</span></div></div>';});
+    rows.forEach(row=>{html+='<div class="scope-row"><div class="scope-skill">'+(row.skill)+'</div><div class="scope-cells"><span class="scope-cell sc-emt'+(row.emt?' on':'')+'">EMT</span><span class="scope-cell sc-aemt'+(row.aemt?' on':'')+'">AEMT</span><span class="scope-cell sc-pm'+(row.pm?' on':'')+'">PM</span></div></div>';});
   });
+  if(q&&!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No skills match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
 }
 
-function renderOps(){
+function renderOps(q){
   const c=document.getElementById('content');
-  c.innerHTML=OPS_DATA.map((item,i)=>'<div class="protocol-card card-appear" style="animation-delay:'+(i*.04)+'s" data-type="ops" data-id="'+(i)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron">›</span></div></div>').join('');
+  const f=q?OPS_DATA.filter(o=>o.title.toLowerCase().includes(q)||o.body.toLowerCase().includes(q)):OPS_DATA;
+  if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No guidelines match "'+esc(q)+'"</div></div>';return;}
+  c.innerHTML=f.map((item,i)=>'<div class="protocol-card card-appear" style="animation-delay:'+(i*.04)+'s" data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron">›</span></div></div>').join('');
 }
 
 function renderMAI(){
@@ -60,7 +67,7 @@ function calcMAIDoses(){
   const raw=parseFloat(document.getElementById('maiWeight').value);
   const el=document.getElementById('calcResults');
   if(!raw||isNaN(raw)||raw<=0){el.innerHTML='<div class="calc-placeholder">Enter patient weight above</div>';return;}
-  const kg=maiUnit==='lbs'?raw*.4536:raw;
+  const kg=Math.min(maiUnit==='lbs'?raw*.4536:raw,300);
   const drugs=[
     {name:'Ketamine (Induction)',detail:'1–1.5 mg/kg IV over 1 min',lo:kg*1,hi:kg*1.5,unit:'mg',note:'Administer over 60 sec. Wait 60 sec for effect.'},
     {name:'Vecuronium (Paralytic)',detail:'0.1 mg/kg IV over 30–60 sec',lo:kg*.1,hi:null,unit:'mg',note:'Onset 60–90 sec. Duration 30–60 min.'},
@@ -76,10 +83,9 @@ function render(){
   const q=searchQuery.trim().toLowerCase();
   if(currentTab==='protocols')renderProtocols(q);
   else if(currentTab==='formulary')renderFormulary(q);
-  else if(currentTab==='scope')renderScope();
-  else if(currentTab==='ops')renderOps();
+  else if(currentTab==='scope')renderScope(q);
+  else if(currentTab==='ops')renderOps(q);
   else if(currentTab==='mai')renderMAI();
-  else if(currentTab==='quiz'){window.location.href='quiz.html';}
 }
 
 function showDetail(type,id){
@@ -98,42 +104,53 @@ function showDetail(type,id){
   }
   dv.style.display='block';
   dv.scrollTop=0;
+  // Push a history entry so the phone/browser back button closes the
+  // overlay instead of leaving the app.
+  if(!(history.state&&history.state.detail))history.pushState({detail:true},'');
 }
 function hideDetail(){
   var dv=document.getElementById('detail-view');
   if(dv){dv.style.display='none';}
 }
+function closeDetail(){
+  var dv=document.getElementById('detail-view');
+  if(dv&&dv.style.display==='block'&&history.state&&history.state.detail)history.back();
+  else hideDetail();
+}
+window.addEventListener('popstate',hideDetail);
 
 var backBtnEl = document.getElementById('backBtn');
 if(backBtnEl){
-  backBtnEl.addEventListener('click', function(e){e.preventDefault();e.stopPropagation();hideDetail();});
-  backBtnEl.addEventListener('touchend', function(e){e.preventDefault();e.stopPropagation();hideDetail();});
+  backBtnEl.addEventListener('click', function(e){e.preventDefault();e.stopPropagation();closeDetail();});
+  backBtnEl.addEventListener('touchend', function(e){e.preventDefault();e.stopPropagation();closeDetail();});
 }
 document.querySelectorAll('.nav-tab').forEach(function(tab){
   tab.addEventListener('click',function(){
-    hideDetail();
+    if(!tab.dataset.tab)return; // Quiz/PDF are links — don't steal the active tab
+    closeDetail();
     document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
     tab.classList.add('active');
     currentTab=tab.dataset.tab;
+    window.scrollTo(0,0);
     render();
   });
 });
 document.getElementById('searchInput').addEventListener('input',function(e){
   searchQuery=e.target.value;
   document.getElementById('clearBtn').style.display=searchQuery?'block':'none';
-  if(currentTab==='scope')return;
+  if(currentTab==='mai')return; // MAI is a fixed procedure page — re-rendering would wipe the calculator
   render();
 });
 document.getElementById('clearBtn').addEventListener('click',function(){
   document.getElementById('searchInput').value='';
   searchQuery='';
   document.getElementById('clearBtn').style.display='none';
+  if(currentTab==='mai')return;
   render();
 });
 document.getElementById('content').addEventListener('click',function(e){
   var card=e.target.closest('[data-type]');
   if(card){showDetail(card.dataset.type,card.dataset.id);}
 });
-// ── QUIZ SYSTEM ───────────────────────────────────────────────
-document.addEventListener('keydown', function(e){if(e.key==='Escape'){hideDetail();}});
+document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
 render();
