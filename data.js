@@ -131,7 +131,7 @@ const PT_CALC={
 "Amiodarone":[
  {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT) — 1st",route:"IV/IO",who:"adult",f:function(k){return"300 mg"}},
  {ind:"Arrest — repeat ×1",route:"IV/IO",who:"adult",f:function(k){return"150 mg"}},
- {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1",who:"peds",f:function(k){return pk(k,5,null,"mg",0)}}],
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1",who:"peds",f:function(k){return pk(k,5,300,"mg",0)}}],
 "Aspirin":[
  {ind:"Suspected ACS",route:"PO chewed",who:"adult",f:function(k){return"324 mg"}},
  {ind:"Suspected ACS",route:"",who:"peds",f:function(k){return"Not indicated"}}],
@@ -198,8 +198,8 @@ const PT_CALC={
  {qc:"Fluids & Pressors",ind:"Shock / post-ROSC — titrate to MAP > 65",route:"IV/IO infusion (4 mg/500 mL = 8 mcg/mL)",who:"all",f:function(k){var lo=k*0.1,hi=k*0.2;return fmt(lo)+"–"+fmt(hi)+" mcg/min<br>= "+fmt(lo*7.5,0)+"–"+fmt(hi*7.5,0)+" mL/hr"}}],
 "Normal Saline (0.9% NaCl)":[
  {qc:"Fluids & Pressors",ind:"Fluid bolus",route:"IV/IO — reassess and repeat",who:"adult",f:function(k){return"250–500 mL"}},
- {qc:"Fluids & Pressors",ind:"Fluid bolus (≥ 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,20,null,"mL",0)}},
- {qc:"Fluids & Pressors",ind:"Fluid bolus (< 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,10,null,"mL",0)}}],
+ {qc:"Fluids & Pressors",ind:"Fluid bolus (≥ 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,20,500,"mL",0)}},
+ {qc:"Fluids & Pressors",ind:"Fluid bolus (< 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,10,500,"mL",0)}}],
 "Ondansetron":[
  {ind:"Nausea — one dose",route:"IV/IO/IM or ODT",who:"adult",f:function(k){return"4 mg"}},
  {ind:"Nausea (> 2 yr) — one dose",route:"IV/IO/IM or ODT",who:"peds",f:function(k){return pk(k,0.1,4,"mg")}}],
