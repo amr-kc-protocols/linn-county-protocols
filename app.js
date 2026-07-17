@@ -3,6 +3,86 @@ let currentTab='protocols',searchQuery='';
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// ── PATIENT MODE ─────────────────────────────────────────────
+// PT = {kg, mode:'adult'|'peds', label} or null. Persisted so the
+// weight survives page reloads and offline restarts mid-call.
+var PT=null;
+try{PT=JSON.parse(localStorage.getItem('linn-pt')||'null');}catch(e){}
+if(PT&&(!(PT.kg>0)||PT.kg>300))PT=null;
+var ptPanelOpen=false;
+
+function savePT(){try{if(PT)localStorage.setItem('linn-pt',JSON.stringify(PT));else localStorage.removeItem('linn-pt');}catch(e){}}
+
+function ptRules(name){
+  var rules=PT_CALC[name];
+  if(!PT||!rules)return[];
+  return rules.filter(function(r){return r.who==='all'||r.who===PT.mode;});
+}
+
+function ptPanelHtml(rules){
+  if(!PT||!rules.length)return'';
+  return'<div class="pt-panel"><div class="pt-panel-hdr">⚖ This patient — '+esc(PT.label)+'</div>'+
+    rules.map(function(r){return'<div class="pt-row"><span class="pt-ind">'+r.ind+(r.route?'<span class="pt-route">'+r.route+'</span>':'')+'</span><span class="pt-dose">'+r.f(PT.kg)+'</span></div>';}).join('')+
+    '<div class="pt-panel-note">Computed from the reference dosing above — verify before administration.</div></div>';
+}
+
+function renderPatientBar(){
+  var bar=document.getElementById('patientBar');
+  if(!bar)return;
+  var chip;
+  if(PT)chip='<button class="pt-chip set" id="ptChip">⚖ '+esc(PT.label)+'</button><button class="pt-clear" id="ptClear" aria-label="Clear patient">&times;</button>';
+  else chip='<button class="pt-chip" id="ptChip">⚖ Set Patient Weight</button>';
+  var panel='';
+  if(ptPanelOpen){
+    var mode=(PT&&PT.mode)||'adult';
+    panel='<div class="pt-form">'+
+      '<div class="pt-mode-row"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds">Pediatric</button></div>'+
+      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptSet">Set</button></div>'+
+      '<div class="pt-brose" id="ptBrose" style="display:'+(mode==='peds'?'block':'none')+'"><div class="pt-brose-label">Broselow color (fallback — measure with tape when available)</div><div class="pt-brose-row">'+
+        BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'"></button>';}).join('')+
+      '</div></div></div>';
+  }
+  bar.innerHTML='<div class="pt-bar-inner">'+chip+panel+'</div>';
+  wirePatientBar();
+}
+
+function wirePatientBar(){
+  var ge=function(id){return document.getElementById(id);};
+  var chip=ge('ptChip');
+  if(chip)chip.onclick=function(){ptPanelOpen=!ptPanelOpen;renderPatientBar();if(ptPanelOpen){var w=ge('ptWeight');if(w){if(PT)w.value=PT.kg;w.focus();}}};
+  var clr=ge('ptClear');
+  if(clr)clr.onclick=function(){PT=null;ptPanelOpen=false;savePT();renderPatientBar();render();};
+  document.querySelectorAll('.pt-mode-btn').forEach(function(b){
+    b.onclick=function(){
+      document.querySelectorAll('.pt-mode-btn').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      var br=ge('ptBrose');if(br)br.style.display=b.dataset.mode==='peds'?'block':'none';
+    };
+  });
+  var setBtn=ge('ptSet');
+  if(setBtn)setBtn.onclick=function(){
+    var raw=parseFloat(ge('ptWeight').value);
+    if(!raw||raw<=0)return;
+    var lbs=ge('ptLbs').classList.contains('active');
+    var kg=Math.min(lbs?raw*.4536:raw,300);
+    var mode=document.querySelector('.pt-mode-btn.active').dataset.mode;
+    PT={kg:+kg.toFixed(1),mode:mode,label:+kg.toFixed(1)+' kg'+(lbs?' ('+raw+' lbs)':'')+' · '+(mode==='peds'?'Peds':'Adult')};
+    ptPanelOpen=false;savePT();renderPatientBar();render();
+  };
+  var kgBtn=ge('ptKg'),lbsBtn=ge('ptLbs');
+  if(kgBtn)kgBtn.onclick=function(){kgBtn.classList.add('active');lbsBtn.classList.remove('active');};
+  if(lbsBtn)lbsBtn.onclick=function(){lbsBtn.classList.add('active');kgBtn.classList.remove('active');};
+  var wIn=ge('ptWeight');
+  if(wIn)wIn.addEventListener('keydown',function(e){if(e.key==='Enter'&&setBtn)setBtn.onclick();});
+  document.querySelectorAll('.pt-color').forEach(function(b){
+    b.onclick=function(){
+      var bz=BROSELOW[parseInt(b.dataset.bi)];
+      PT={kg:bz.kg,mode:'peds',label:'Broselow '+bz.c+' ~'+bz.kg+' kg'};
+      ptPanelOpen=false;savePT();renderPatientBar();render();
+    };
+  });
+}
+
 // ── RENDER FUNCTIONS ─────────────────────────────────────────
 function getScopeClass(s){
   if(!s)return'scope-all';const l=s.toLowerCase();
@@ -29,7 +109,7 @@ function renderFormulary(q){
   const c=document.getElementById('content');
   const f=q?FORMULARY.filter(d=>d.name.toLowerCase().includes(q)||d.cls.toLowerCase().includes(q)||(d.dose&&d.dose.toLowerCase().includes(q))):FORMULARY;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card card-appear" style="animation-delay:'+(i*.02)+'s"><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body"><div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>').join('')+'</div>';
+  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card card-appear" style="animation-delay:'+(i*.02)+'s"><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body"><div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+ptPanelHtml(ptRules(d.name))+'</div></div>').join('')+'</div>';
 }
 
 function renderScope(q){
@@ -59,6 +139,8 @@ function renderMAI(){
   document.getElementById('maiWeight').addEventListener('input',calcMAIDoses);
   document.getElementById('btnKg').addEventListener('click',function(){setUnit('kg');});
   document.getElementById('btnLbs').addEventListener('click',function(){setUnit('lbs');});
+  // Pre-fill from Patient Mode so the calculator is ready on arrival
+  if(PT&&PT.kg){maiUnit='kg';document.getElementById('btnKg').classList.add('active');document.getElementById('btnLbs').classList.remove('active');document.getElementById('maiWeight').value=PT.kg;calcMAIDoses();}
 }
 
 let maiUnit='kg';
@@ -153,4 +235,5 @@ document.getElementById('content').addEventListener('click',function(e){
   if(card){showDetail(card.dataset.type,card.dataset.id);}
 });
 document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
+renderPatientBar();
 render();
