@@ -195,7 +195,7 @@ const PT_CALC={
 "Nitroglycerin":[
  {ind:"ACS / CHF (SBP ≥ 100)",route:"SL q5 min",who:"adult",f:function(k){return"0.4 mg"}}],
 "Norepinephrine":[
- {qc:"Fluids & Pressors",ind:"Shock / post-ROSC — titrate to MAP > 65",route:"IV/IO infusion (4 mg/500 mL = 8 mcg/mL)",who:"all",f:function(k){var lo=k*0.1,hi=k*0.2;return fmt(lo)+"–"+fmt(hi)+" mcg/min = "+fmt(lo*7.5,0)+"–"+fmt(hi*7.5,0)+" mL/hr"}}],
+ {qc:"Fluids & Pressors",ind:"Shock / post-ROSC — titrate to MAP > 65",route:"IV/IO infusion (4 mg/500 mL = 8 mcg/mL)",who:"all",f:function(k){var lo=k*0.1,hi=k*0.2;return fmt(lo)+"–"+fmt(hi)+" mcg/min<br>= "+fmt(lo*7.5,0)+"–"+fmt(hi*7.5,0)+" mL/hr"}}],
 "Normal Saline (0.9% NaCl)":[
  {qc:"Fluids & Pressors",ind:"Fluid bolus",route:"IV/IO — reassess and repeat",who:"adult",f:function(k){return"250–500 mL"}},
  {qc:"Fluids & Pressors",ind:"Fluid bolus (≥ 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,20,null,"mL",0)}},
