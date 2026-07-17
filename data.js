@@ -113,7 +113,7 @@ const FORMULARY=[
 // ── PATIENT MODE — structured dose rules ─────────────────────
 // Each rule mirrors the free-text dosing above; the reference text
 // remains the authority. f(kg) returns the computed display string.
-function fmt(n,d){return(+n.toFixed(d===undefined?1:d)).toString()}
+function fmt(n,d){d=d===undefined?1:d;while(n>0&&+n.toFixed(d)===0&&d<3)d++;return(+n.toFixed(d)).toString()}
 function pk(kg,per,max,unit,d){var v=kg*per,c=max&&v>max;if(c)v=max;return fmt(v,d)+' '+unit+(c?' (max)':'')}
 function pkr(kg,lo,hi,max,unit,d){var a=kg*lo,b=kg*hi,c=max&&b>max;if(c)b=max;if(max&&a>max)a=max;return(a===b?fmt(a,d):fmt(a,d)+'–'+fmt(b,d))+' '+unit+(c?' (max)':'')}
 
