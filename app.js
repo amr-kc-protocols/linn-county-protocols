@@ -26,6 +26,25 @@ function ptPanelHtml(rules){
     '<div class="pt-panel-note">Computed from the reference dosing above — verify before administration.</div></div>';
 }
 
+// The emergency dose card: every PT_CALC rule tagged with a qc group,
+// grouped and ordered by urgency, computed for the current patient.
+var QC_ORDER=['Cardiac Arrest','Anaphylaxis','Seizure','Hypoglycemia','Opioid OD','Brady / SVT','Fluids & Pressors','MAI — PM'];
+function quickCardInner(){
+  if(!PT)return'<div class="pt-quick-empty">Enter a weight to see this patient&rsquo;s emergency doses</div>';
+  var byGroup={};
+  Object.keys(PT_CALC).forEach(function(name){
+    PT_CALC[name].forEach(function(r){
+      if(!r.qc)return;
+      if(r.who!=='all'&&r.who!==PT.mode)return;
+      var short=name.replace(/ ★.*$/,'').replace(/ \([^)]*\)$/,'');
+      (byGroup[r.qc]=byGroup[r.qc]||[]).push('<div class="pt-q-row"><span class="pt-q-drug">'+short+(r.route?'<span class="pt-q-route">'+r.route+'</span>':'')+'</span><span class="pt-q-dose">'+r.f(PT.kg)+'</span></div>');
+    });
+  });
+  return QC_ORDER.filter(function(g){return byGroup[g];}).map(function(g){
+    return'<div class="pt-q-group">'+g+'</div>'+byGroup[g].join('');
+  }).join('')+'<div class="pt-panel-note">Computed from formulary reference dosing — verify before administration.</div>';
+}
+
 function renderPatientBar(){
   var bar=document.getElementById('patientBar');
   if(!bar)return;
@@ -37,10 +56,11 @@ function renderPatientBar(){
     var mode=(PT&&PT.mode)||'adult';
     panel='<div class="pt-form">'+
       '<div class="pt-mode-row"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds">Pediatric</button></div>'+
-      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
+      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"'+(PT?' value="'+PT.kg+'"':'')+'><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
       '<div class="pt-brose" id="ptBrose" style="display:'+(mode==='peds'?'block':'none')+'"><div class="pt-brose-label">Broselow color (fallback — measure with tape when available)</div><div class="pt-brose-row">'+
         BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'"></button>';}).join('')+
-      '</div></div></div>';
+      '</div></div>'+
+      '<div class="pt-quick" id="ptQuick">'+quickCardInner()+'</div></div>';
   }
   bar.innerHTML='<div class="pt-bar-inner">'+chip+panel+'</div>';
   wirePatientBar();
@@ -71,7 +91,9 @@ function wirePatientBar(){
     var lbs=ge('ptLbs').classList.contains('active');
     var kg=Math.min(lbs?raw*.4536:raw,300);
     PT={kg:+kg.toFixed(1),mode:activeMode(),label:+kg.toFixed(1)+' kg'+(lbs?' ('+raw+' lbs)':'')+' · '+(activeMode()==='peds'?'Peds':'Adult')};
-    savePT();updateChipLive();softRender();
+    savePT();updateChipLive();
+    var qk=ge('ptQuick');if(qk)qk.innerHTML=quickCardInner();
+    softRender();
   }
   var applyTimer=null;
   function applySoon(){clearTimeout(applyTimer);applyTimer=setTimeout(applyFromForm,180);}
@@ -98,7 +120,8 @@ function wirePatientBar(){
     b.onclick=function(){
       var bz=BROSELOW[parseInt(b.dataset.bi)];
       PT={kg:bz.kg,mode:'peds',label:'Broselow '+bz.c+' ~'+bz.kg+' kg'};
-      ptPanelOpen=false;savePT();renderPatientBar();softRender();
+      // Keep the panel open — the dose card below is the payoff
+      savePT();renderPatientBar();softRender();
     };
   });
 }

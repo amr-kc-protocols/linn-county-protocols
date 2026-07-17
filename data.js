@@ -122,36 +122,36 @@ const PT_CALC={
  {ind:"Pain / Fever",route:"PO or IV over 15 min",who:"adult",f:function(k){return"1,000 mg"}},
  {ind:"Pain / Fever",route:"PO or IV over 15 min",who:"peds",f:function(k){return pk(k,15,1000,"mg",0)}}],
 "Adenosine":[
- {ind:"SVT — 1st dose",route:"IV fast push",who:"adult",f:function(k){return"6 mg"}},
+ {qc:"Brady / SVT",ind:"SVT — 1st dose",route:"IV fast push",who:"adult",f:function(k){return"6 mg"}},
  {ind:"SVT — 2nd dose",route:"IV fast push",who:"adult",f:function(k){return"12 mg"}},
- {ind:"SVT — 1st dose",route:"IV fast push",who:"peds",f:function(k){return pk(k,0.1,6,"mg")}},
+ {qc:"Brady / SVT",ind:"SVT — 1st dose",route:"IV fast push",who:"peds",f:function(k){return pk(k,0.1,6,"mg")}},
  {ind:"SVT — 2nd dose",route:"IV fast push",who:"peds",f:function(k){return pk(k,0.2,12,"mg")}}],
 "Albuterol":[
  {ind:"Bronchospasm",route:"Nebulized",who:"all",f:function(k){return"2.5 mg / 3 mL NS"}}],
 "Amiodarone":[
- {ind:"Arrest (VF/pVT) — 1st",route:"IV/IO",who:"adult",f:function(k){return"300 mg"}},
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT) — 1st",route:"IV/IO",who:"adult",f:function(k){return"300 mg"}},
  {ind:"Arrest — repeat ×1",route:"IV/IO",who:"adult",f:function(k){return"150 mg"}},
- {ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1",who:"peds",f:function(k){return pk(k,5,null,"mg",0)}}],
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1",who:"peds",f:function(k){return pk(k,5,null,"mg",0)}}],
 "Aspirin":[
  {ind:"Suspected ACS",route:"PO chewed",who:"adult",f:function(k){return"324 mg"}},
  {ind:"Suspected ACS",route:"",who:"peds",f:function(k){return"Not indicated"}}],
 "Atropine":[
- {ind:"Bradycardia",route:"IV/IO fast push — q3–5 min (max 3 mg total)",who:"adult",f:function(k){return"0.5 mg"}},
- {ind:"Bradycardia",route:"IV/IO — repeat ×1 (max 3 mg total)",who:"peds",f:function(k){return fmt(Math.min(Math.max(k*0.02,0.1),0.5),2)+" mg"}}],
+ {qc:"Brady / SVT",ind:"Bradycardia",route:"IV/IO fast push — q3–5 min (max 3 mg total)",who:"adult",f:function(k){return"0.5 mg"}},
+ {qc:"Brady / SVT",ind:"Bradycardia",route:"IV/IO — repeat ×1 (max 3 mg total)",who:"peds",f:function(k){return fmt(Math.min(Math.max(k*0.02,0.1),0.5),2)+" mg"}}],
 "Calcium Chloride":[
  {ind:"Arrest — hyperkalemia",route:"IV/IO push",who:"adult",f:function(k){return"1 g"}},
  {ind:"Arrest — hyperkalemia",route:"IV/IO push",who:"peds",f:function(k){return pk(k,20,1000,"mg",0)}}],
 "Dextrose 10% (D10)":[
- {ind:"Hypoglycemia",route:"IV/IO — titrate (max 50 g total)",who:"adult",f:function(k){return"Up to 25 g (250 mL)"}},
- {ind:"Hypoglycemia (≥ 1 mo)",route:"IV/IO — titrate",who:"peds",f:function(k){return pk(k,0.5,25,"g")+" = "+pk(k,5,250,"mL",0)}}],
+ {qc:"Hypoglycemia",ind:"Hypoglycemia",route:"IV/IO — titrate (max 50 g total)",who:"adult",f:function(k){return"Up to 25 g (250 mL)"}},
+ {qc:"Hypoglycemia",ind:"Hypoglycemia (≥ 1 mo)",route:"IV/IO — titrate",who:"peds",f:function(k){return pk(k,0.5,25,"g")+" = "+pk(k,5,250,"mL",0)}}],
 "Diphenhydramine":[
  {ind:"Allergic reaction (after epi)",route:"IV/IO/IM — one dose",who:"adult",f:function(k){return"50 mg"}},
  {ind:"Allergic reaction (after epi)",route:"IV/IO/IM — one dose",who:"peds",f:function(k){return pk(k,1,50,"mg",0)}}],
 "Epinephrine":[
- {ind:"Cardiac arrest",route:"IV/IO q3–5 min (1:10,000)",who:"adult",f:function(k){return"1 mg"}},
- {ind:"Cardiac arrest",route:"IV/IO q3–5 min (1:10,000 = 0.1 mg/mL)",who:"peds",f:function(k){return pk(k,0.01,1,"mg",2)}},
- {ind:"Anaphylaxis",route:"IM lateral thigh q5–15 min (1:1,000)",who:"adult",f:function(k){return"0.3 mg"}},
- {ind:"Anaphylaxis",route:"IM lateral thigh q5 min (1:1,000)",who:"peds",f:function(k){return pk(k,0.01,0.3,"mg",2)}}],
+ {qc:"Cardiac Arrest",ind:"Cardiac arrest",route:"IV/IO q3–5 min (1:10,000)",who:"adult",f:function(k){return"1 mg"}},
+ {qc:"Cardiac Arrest",ind:"Cardiac arrest",route:"IV/IO q3–5 min (1:10,000 = 0.1 mg/mL)",who:"peds",f:function(k){return pk(k,0.01,1,"mg",2)}},
+ {qc:"Anaphylaxis",ind:"Anaphylaxis",route:"IM lateral thigh q5–15 min (1:1,000)",who:"adult",f:function(k){return"0.3 mg"}},
+ {qc:"Anaphylaxis",ind:"Anaphylaxis",route:"IM lateral thigh q5 min (1:1,000)",who:"peds",f:function(k){return pk(k,0.01,0.3,"mg",2)}}],
 "Fentanyl":[
  {ind:"Pain",route:"IV/IO/IM/IN q5–10 min (max 200 mcg total)",who:"adult",f:function(k){return"25–100 mcg"}},
  {ind:"Pain",route:"IV/IO/IM q5–10 min",who:"peds",f:function(k){return pk(k,1,100,"mcg",0)}},
@@ -163,14 +163,14 @@ const PT_CALC={
  {ind:"Bronchospasm (with albuterol)",route:"Nebulized",who:"all",f:function(k){return"0.5 mg / 2.5 mL"}}],
 "Ketamine":[
  {ind:"Analgesia (sub-dissociative)",route:"IV/IO in 100 mL NS over 5–10 min (max 40 mg total)",who:"adult",f:function(k){return"20 mg"}},
- {ind:"MAI induction — PM",route:"IV over 1 min",who:"all",f:function(k){return pkr(k,1,1.5,null,"mg",0)}}],
+ {qc:"MAI — PM",ind:"MAI induction — PM",route:"IV over 1 min",who:"all",f:function(k){return pkr(k,1,1.5,null,"mg",0)}}],
 "Ketorolac (Toradol) ★ NEW 2025":[
  {ind:"Pain — single dose only",route:"IV/IO slow over 1–2 min",who:"adult",f:function(k){return"15–30 mg"}},
  {ind:"Pain — single dose only",route:"IM",who:"adult",f:function(k){return"30 mg"}},
  {ind:"Pain (≥ 2 yr) — single dose only",route:"IV/IO or IM",who:"peds",f:function(k){return pk(k,0.5,15,"mg")}},
  {ind:"Under 2 yr",route:"",who:"peds",f:function(k){return"Contact DMO"}}],
 "Lidocaine":[
- {ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1 in 5 min",who:"all",f:function(k){return pkr(k,1,1.5,null,"mg",0)}},
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1 in 5 min",who:"all",f:function(k){return pkr(k,1,1.5,null,"mg",0)}},
  {ind:"IO site analgesia",route:"IO slow → 10 mL NS → IO slow",who:"adult",f:function(k){return"40 mg → 20 mg"}},
  {ind:"IO site analgesia",route:"IO slow → 5 mL NS → IO slow",who:"peds",f:function(k){return pk(k,0.5,40,"mg")+" → "+pk(k,0.25,20,"mg")}}],
 "Magnesium Sulfate":[
@@ -182,36 +182,36 @@ const PT_CALC={
  {ind:"Anaphylaxis / Bronchospasm",route:"IV or IM",who:"adult",f:function(k){return"125 mg"}},
  {ind:"Anaphylaxis / Bronchospasm",route:"IV or IM",who:"peds",f:function(k){return pkr(k,1,2,125,"mg",0)}}],
 "Midazolam":[
- {ind:"Seizure — with IV",route:"IV q5 min (max 20 mg total)",who:"adult",f:function(k){return"5 mg"}},
- {ind:"Seizure — no IV",route:"IM (max 20 mg total)",who:"adult",f:function(k){return"10 mg"}},
+ {qc:"Seizure",ind:"Seizure — with IV",route:"IV q5 min (max 20 mg total)",who:"adult",f:function(k){return"5 mg"}},
+ {qc:"Seizure",ind:"Seizure — no IV",route:"IM (max 20 mg total)",who:"adult",f:function(k){return"10 mg"}},
  {ind:"Agitation — PM",route:"IV/IO/IM/IN q5 min (max 20 mg total)",who:"adult",f:function(k){return"5–10 mg"}},
- {ind:"Seizure",route:"IV",who:"peds",f:function(k){return pk(k,0.1,10,"mg")}},
- {ind:"Seizure",route:"IN",who:"peds",f:function(k){return pk(k,0.2,10,"mg")}}],
+ {qc:"Seizure",ind:"Seizure",route:"IV",who:"peds",f:function(k){return pk(k,0.1,10,"mg")}},
+ {qc:"Seizure",ind:"Seizure",route:"IN",who:"peds",f:function(k){return pk(k,0.2,10,"mg")}}],
 "Morphine":[
  {ind:"Pain",route:"Slow IV q5 min (max 20 mg pain / 30 mg burns)",who:"adult",f:function(k){return"2–10 mg"}}],
 "Naloxone":[
- {ind:"Opioid OD — titrate to respirations",route:"IV/IO/IM/IN q3–5 min (max 4 mg)",who:"adult",f:function(k){return"0.4–2 mg"}},
- {ind:"Opioid OD — titrate to respirations",route:"IV/IO/IM/IN q3–5 min",who:"peds",f:function(k){return pk(k,0.01,0.4,"mg",2)}}],
+ {qc:"Opioid OD",ind:"Opioid OD — titrate to respirations",route:"IV/IO/IM/IN q3–5 min (max 4 mg)",who:"adult",f:function(k){return"0.4–2 mg"}},
+ {qc:"Opioid OD",ind:"Opioid OD — titrate to respirations",route:"IV/IO/IM/IN q3–5 min",who:"peds",f:function(k){return pk(k,0.01,0.4,"mg",2)}}],
 "Nitroglycerin":[
  {ind:"ACS / CHF (SBP ≥ 100)",route:"SL q5 min",who:"adult",f:function(k){return"0.4 mg"}}],
 "Norepinephrine":[
- {ind:"Shock / post-ROSC — titrate to MAP > 65",route:"IV/IO infusion (4 mg/500 mL = 8 mcg/mL)",who:"all",f:function(k){var lo=k*0.1,hi=k*0.2;return fmt(lo)+"–"+fmt(hi)+" mcg/min = "+fmt(lo*7.5,0)+"–"+fmt(hi*7.5,0)+" mL/hr"}}],
+ {qc:"Fluids & Pressors",ind:"Shock / post-ROSC — titrate to MAP > 65",route:"IV/IO infusion (4 mg/500 mL = 8 mcg/mL)",who:"all",f:function(k){var lo=k*0.1,hi=k*0.2;return fmt(lo)+"–"+fmt(hi)+" mcg/min = "+fmt(lo*7.5,0)+"–"+fmt(hi*7.5,0)+" mL/hr"}}],
 "Normal Saline (0.9% NaCl)":[
- {ind:"Fluid bolus",route:"IV/IO — reassess and repeat",who:"adult",f:function(k){return"250–500 mL"}},
- {ind:"Fluid bolus (≥ 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,20,null,"mL",0)}},
- {ind:"Fluid bolus (< 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,10,null,"mL",0)}}],
+ {qc:"Fluids & Pressors",ind:"Fluid bolus",route:"IV/IO — reassess and repeat",who:"adult",f:function(k){return"250–500 mL"}},
+ {qc:"Fluids & Pressors",ind:"Fluid bolus (≥ 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,20,null,"mL",0)}},
+ {qc:"Fluids & Pressors",ind:"Fluid bolus (< 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,10,null,"mL",0)}}],
 "Ondansetron":[
  {ind:"Nausea — one dose",route:"IV/IO/IM or ODT",who:"adult",f:function(k){return"4 mg"}},
  {ind:"Nausea (> 2 yr) — one dose",route:"IV/IO/IM or ODT",who:"peds",f:function(k){return pk(k,0.1,4,"mg")}}],
 "Rocuronium":[
- {ind:"MAI paralytic (alt) — PM",route:"IV",who:"all",f:function(k){return pkr(k,0.5,1,null,"mg",0)}}],
+ {qc:"MAI — PM",ind:"MAI paralytic (alt) — PM",route:"IV",who:"all",f:function(k){return pkr(k,0.5,1,null,"mg",0)}}],
 "Sodium Bicarbonate":[
  {ind:"Arrest / TCA (QRS > 100 ms)",route:"IV/IO push",who:"all",f:function(k){return pk(k,1,null,"mEq",0)}}],
 "Tranexamic Acid (TXA) ★ NEW 2025":[
  {ind:"Major hemorrhage — loading",route:"In 50 mL NS IV/IO over 10 min",who:"adult",f:function(k){return"1 g"}},
  {ind:"≥ 12 yr — physician consult ONLY",route:"Over 10 min",who:"peds",f:function(k){return"~"+pk(k,15,1000,"mg",0)}}],
 "Vecuronium":[
- {ind:"MAI paralytic — PM",route:"IV slow over 30–60 sec",who:"all",f:function(k){return pk(k,0.1,null,"mg",1)}}]
+ {qc:"MAI — PM",ind:"MAI paralytic — PM",route:"IV slow over 30–60 sec",who:"all",f:function(k){return pk(k,0.1,null,"mg",1)}}]
 };
 
 // Broselow color zones (standard length-based tape weight ranges).
