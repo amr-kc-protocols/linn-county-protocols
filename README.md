@@ -22,7 +22,7 @@ Searchable protocol library organized by clinical category:
 - Clinical Policies (refusals, consent, restraints)
 
 ### Formulary
-Complete drug reference with dosing, contraindications, and warnings for all agents in the 2026 formulary — including **Ketorolac (NEW 2025)**.
+Complete drug reference with dosing, contraindications, and warnings for all agents in the 2026 formulary — including **Ketorolac (NEW 2025)** and **Tranexamic Acid / TXA (interim protocol, effective 9/1/2025)**.
 
 ### Scope of Practice
 Visual EMT / AEMT / Paramedic scope comparison across airway, circulation, vascular access, medication routes, trauma, and other skills.
