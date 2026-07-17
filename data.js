@@ -110,6 +110,124 @@ const FORMULARY=[
 {name:"Vecuronium",cls:"Non-depolarizing NMBA",scope:"PM only",dose:"Adult and Peds >16 yr: 0.1 mg/kg IV slow over 30–60 sec (typically 5–7 mg for average adult)",ci:"Hypersensitivity",warn:"COMPLETE RESPIRATORY PARALYSIS. Sedation/analgesia MUST precede. Patient is fully conscious without it."}
 ];
 
+// ── PATIENT MODE — structured dose rules ─────────────────────
+// Each rule mirrors the free-text dosing above; the reference text
+// remains the authority. f(kg) returns the computed display string.
+function fmt(n,d){return(+n.toFixed(d===undefined?1:d)).toString()}
+function pk(kg,per,max,unit,d){var v=kg*per,c=max&&v>max;if(c)v=max;return fmt(v,d)+' '+unit+(c?' (max)':'')}
+function pkr(kg,lo,hi,max,unit,d){var a=kg*lo,b=kg*hi,c=max&&b>max;if(c)b=max;if(max&&a>max)a=max;return(a===b?fmt(a,d):fmt(a,d)+'–'+fmt(b,d))+' '+unit+(c?' (max)':'')}
+
+const PT_CALC={
+"Acetaminophen":[
+ {ind:"Pain / Fever",route:"PO or IV over 15 min",who:"adult",f:function(k){return"1,000 mg"}},
+ {ind:"Pain / Fever",route:"PO or IV over 15 min",who:"peds",f:function(k){return pk(k,15,1000,"mg",0)}}],
+"Adenosine":[
+ {qc:"Brady / SVT",ind:"SVT — 1st dose",route:"IV fast push",who:"adult",f:function(k){return"6 mg"}},
+ {ind:"SVT — 2nd dose",route:"IV fast push",who:"adult",f:function(k){return"12 mg"}},
+ {qc:"Brady / SVT",ind:"SVT — 1st dose",route:"IV fast push",who:"peds",f:function(k){return pk(k,0.1,6,"mg")}},
+ {ind:"SVT — 2nd dose",route:"IV fast push",who:"peds",f:function(k){return pk(k,0.2,12,"mg")}}],
+"Albuterol":[
+ {ind:"Bronchospasm",route:"Nebulized",who:"all",f:function(k){return"2.5 mg / 3 mL NS"}}],
+"Amiodarone":[
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT) — 1st",route:"IV/IO",who:"adult",f:function(k){return"300 mg"}},
+ {ind:"Arrest — repeat ×1",route:"IV/IO",who:"adult",f:function(k){return"150 mg"}},
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1",who:"peds",f:function(k){return pk(k,5,null,"mg",0)}}],
+"Aspirin":[
+ {ind:"Suspected ACS",route:"PO chewed",who:"adult",f:function(k){return"324 mg"}},
+ {ind:"Suspected ACS",route:"",who:"peds",f:function(k){return"Not indicated"}}],
+"Atropine":[
+ {qc:"Brady / SVT",ind:"Bradycardia",route:"IV/IO fast push — q3–5 min (max 3 mg total)",who:"adult",f:function(k){return"0.5 mg"}},
+ {qc:"Brady / SVT",ind:"Bradycardia",route:"IV/IO — repeat ×1 (max 3 mg total)",who:"peds",f:function(k){return fmt(Math.min(Math.max(k*0.02,0.1),0.5),2)+" mg"}}],
+"Calcium Chloride":[
+ {ind:"Arrest — hyperkalemia",route:"IV/IO push",who:"adult",f:function(k){return"1 g"}},
+ {ind:"Arrest — hyperkalemia",route:"IV/IO push",who:"peds",f:function(k){return pk(k,20,1000,"mg",0)}}],
+"Dextrose 10% (D10)":[
+ {qc:"Hypoglycemia",ind:"Hypoglycemia",route:"IV/IO — titrate (max 50 g total)",who:"adult",f:function(k){return"Up to 25 g (250 mL)"}},
+ {qc:"Hypoglycemia",ind:"Hypoglycemia (≥ 1 mo)",route:"IV/IO — titrate",who:"peds",f:function(k){return pk(k,0.5,25,"g")+" = "+pk(k,5,250,"mL",0)}}],
+"Diphenhydramine":[
+ {ind:"Allergic reaction (after epi)",route:"IV/IO/IM — one dose",who:"adult",f:function(k){return"50 mg"}},
+ {ind:"Allergic reaction (after epi)",route:"IV/IO/IM — one dose",who:"peds",f:function(k){return pk(k,1,50,"mg",0)}}],
+"Epinephrine":[
+ {qc:"Cardiac Arrest",ind:"Cardiac arrest",route:"IV/IO q3–5 min (1:10,000)",who:"adult",f:function(k){return"1 mg"}},
+ {qc:"Cardiac Arrest",ind:"Cardiac arrest",route:"IV/IO q3–5 min (1:10,000 = 0.1 mg/mL)",who:"peds",f:function(k){return pk(k,0.01,1,"mg",2)}},
+ {qc:"Anaphylaxis",ind:"Anaphylaxis",route:"IM lateral thigh q5–15 min (1:1,000)",who:"adult",f:function(k){return"0.3 mg"}},
+ {qc:"Anaphylaxis",ind:"Anaphylaxis",route:"IM lateral thigh q5 min (1:1,000)",who:"peds",f:function(k){return pk(k,0.01,0.3,"mg",2)}}],
+"Fentanyl":[
+ {ind:"Pain",route:"IV/IO/IM/IN q5–10 min (max 200 mcg total)",who:"adult",f:function(k){return"25–100 mcg"}},
+ {ind:"Pain",route:"IV/IO/IM q5–10 min",who:"peds",f:function(k){return pk(k,1,100,"mcg",0)}},
+ {ind:"Pain",route:"IN q10 min",who:"peds",f:function(k){return pk(k,2,100,"mcg",0)}}],
+"Hydromorphone (Dilaudid)":[
+ {ind:"Pain",route:"IV/IO q10 min (max 4 mg total)",who:"adult",f:function(k){return"0.5–2 mg"}},
+ {ind:"Pain",route:"",who:"peds",f:function(k){return"Contact DMO"}}],
+"Ipratropium":[
+ {ind:"Bronchospasm (with albuterol)",route:"Nebulized",who:"all",f:function(k){return"0.5 mg / 2.5 mL"}}],
+"Ketamine":[
+ {ind:"Analgesia (sub-dissociative)",route:"IV/IO in 100 mL NS over 5–10 min (max 40 mg total)",who:"adult",f:function(k){return"20 mg"}},
+ {qc:"MAI — PM",ind:"MAI induction — PM",route:"IV over 1 min",who:"all",f:function(k){return pkr(k,1,1.5,null,"mg",0)}}],
+"Ketorolac (Toradol) ★ NEW 2025":[
+ {ind:"Pain — single dose only",route:"IV/IO slow over 1–2 min",who:"adult",f:function(k){return"15–30 mg"}},
+ {ind:"Pain — single dose only",route:"IM",who:"adult",f:function(k){return"30 mg"}},
+ {ind:"Pain (≥ 2 yr) — single dose only",route:"IV/IO or IM",who:"peds",f:function(k){return pk(k,0.5,15,"mg")}},
+ {ind:"Under 2 yr",route:"",who:"peds",f:function(k){return"Contact DMO"}}],
+"Lidocaine":[
+ {qc:"Cardiac Arrest",ind:"Arrest (VF/pVT)",route:"IV/IO — repeat ×1 in 5 min",who:"all",f:function(k){return pkr(k,1,1.5,null,"mg",0)}},
+ {ind:"IO site analgesia",route:"IO slow → 10 mL NS → IO slow",who:"adult",f:function(k){return"40 mg → 20 mg"}},
+ {ind:"IO site analgesia",route:"IO slow → 5 mL NS → IO slow",who:"peds",f:function(k){return pk(k,0.5,40,"mg")+" → "+pk(k,0.25,20,"mg")}}],
+"Magnesium Sulfate":[
+ {ind:"Eclampsia",route:"4 g in 50 mL D5W rapid infusion — repeat ×1 at 2 g",who:"adult",f:function(k){return"4 g"}},
+ {ind:"Torsades / VF",route:"Rapid infusion",who:"adult",f:function(k){return"1–2 g"}},
+ {ind:"Asthma",route:"In 50–100 mL over 10–20 min",who:"adult",f:function(k){return"2 g"}},
+ {ind:"Asthma",route:"Over 10–20 min",who:"peds",f:function(k){return pkr(k,20,50,2000,"mg",0)}}],
+"Methylprednisolone":[
+ {ind:"Anaphylaxis / Bronchospasm",route:"IV or IM",who:"adult",f:function(k){return"125 mg"}},
+ {ind:"Anaphylaxis / Bronchospasm",route:"IV or IM",who:"peds",f:function(k){return pkr(k,1,2,125,"mg",0)}}],
+"Midazolam":[
+ {qc:"Seizure",ind:"Seizure — with IV",route:"IV q5 min (max 20 mg total)",who:"adult",f:function(k){return"5 mg"}},
+ {qc:"Seizure",ind:"Seizure — no IV",route:"IM (max 20 mg total)",who:"adult",f:function(k){return"10 mg"}},
+ {ind:"Agitation — PM",route:"IV/IO/IM/IN q5 min (max 20 mg total)",who:"adult",f:function(k){return"5–10 mg"}},
+ {qc:"Seizure",ind:"Seizure",route:"IV",who:"peds",f:function(k){return pk(k,0.1,10,"mg")}},
+ {qc:"Seizure",ind:"Seizure",route:"IN",who:"peds",f:function(k){return pk(k,0.2,10,"mg")}}],
+"Morphine":[
+ {ind:"Pain",route:"Slow IV q5 min (max 20 mg pain / 30 mg burns)",who:"adult",f:function(k){return"2–10 mg"}}],
+"Naloxone":[
+ {qc:"Opioid OD",ind:"Opioid OD — titrate to respirations",route:"IV/IO/IM/IN q3–5 min (max 4 mg)",who:"adult",f:function(k){return"0.4–2 mg"}},
+ {qc:"Opioid OD",ind:"Opioid OD — titrate to respirations",route:"IV/IO/IM/IN q3–5 min",who:"peds",f:function(k){return pk(k,0.01,0.4,"mg",2)}}],
+"Nitroglycerin":[
+ {ind:"ACS / CHF (SBP ≥ 100)",route:"SL q5 min",who:"adult",f:function(k){return"0.4 mg"}}],
+"Norepinephrine":[
+ {qc:"Fluids & Pressors",ind:"Shock / post-ROSC — titrate to MAP > 65",route:"IV/IO infusion (4 mg/500 mL = 8 mcg/mL)",who:"all",f:function(k){var lo=k*0.1,hi=k*0.2;return fmt(lo)+"–"+fmt(hi)+" mcg/min = "+fmt(lo*7.5,0)+"–"+fmt(hi*7.5,0)+" mL/hr"}}],
+"Normal Saline (0.9% NaCl)":[
+ {qc:"Fluids & Pressors",ind:"Fluid bolus",route:"IV/IO — reassess and repeat",who:"adult",f:function(k){return"250–500 mL"}},
+ {qc:"Fluids & Pressors",ind:"Fluid bolus (≥ 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,20,null,"mL",0)}},
+ {qc:"Fluids & Pressors",ind:"Fluid bolus (< 1 mo)",route:"IV/IO — reassess and repeat",who:"peds",f:function(k){return pk(k,10,null,"mL",0)}}],
+"Ondansetron":[
+ {ind:"Nausea — one dose",route:"IV/IO/IM or ODT",who:"adult",f:function(k){return"4 mg"}},
+ {ind:"Nausea (> 2 yr) — one dose",route:"IV/IO/IM or ODT",who:"peds",f:function(k){return pk(k,0.1,4,"mg")}}],
+"Rocuronium":[
+ {qc:"MAI — PM",ind:"MAI paralytic (alt) — PM",route:"IV",who:"all",f:function(k){return pkr(k,0.5,1,null,"mg",0)}}],
+"Sodium Bicarbonate":[
+ {ind:"Arrest / TCA (QRS > 100 ms)",route:"IV/IO push",who:"all",f:function(k){return pk(k,1,null,"mEq",0)}}],
+"Tranexamic Acid (TXA) ★ NEW 2025":[
+ {ind:"Major hemorrhage — loading",route:"In 50 mL NS IV/IO over 10 min",who:"adult",f:function(k){return"1 g"}},
+ {ind:"≥ 12 yr — physician consult ONLY",route:"Over 10 min",who:"peds",f:function(k){return"~"+pk(k,15,1000,"mg",0)}}],
+"Vecuronium":[
+ {qc:"MAI — PM",ind:"MAI paralytic — PM",route:"IV slow over 30–60 sec",who:"all",f:function(k){return pk(k,0.1,null,"mg",1)}}]
+};
+
+// Broselow color zones (standard length-based tape weight ranges).
+// Measure with the physical tape when available — colors here are a fallback.
+const BROSELOW=[
+ {c:"Grey",kg:4,range:"3–5 kg",hex:"#8A8A8A"},
+ {c:"Pink",kg:6.5,range:"6–7 kg",hex:"#E8A0B4"},
+ {c:"Red",kg:8.5,range:"8–9 kg",hex:"#C04838"},
+ {c:"Purple",kg:10.5,range:"10–11 kg",hex:"#8A6A9A"},
+ {c:"Yellow",kg:13,range:"12–14 kg",hex:"#D4B93A"},
+ {c:"White",kg:16.5,range:"15–18 kg",hex:"#E8E4D8"},
+ {c:"Blue",kg:21,range:"19–23 kg",hex:"#3A5A78"},
+ {c:"Orange",kg:26.5,range:"24–29 kg",hex:"#C87A30"},
+ {c:"Green",kg:33,range:"30–36 kg",hex:"#4A6E48"}
+];
+
 const SCOPE_DATA={
 airway:[{skill:"Chin lift / Jaw thrust",emt:1,aemt:1,pm:1},{skill:"NPA Insertion",emt:1,aemt:1,pm:1},{skill:"OPA Insertion",emt:1,aemt:1,pm:1},{skill:"Suction — Upper Airway",emt:1,aemt:1,pm:1},{skill:"Suction — Trachea/Stoma",emt:0,aemt:0,pm:1},{skill:"Nasal Cannula / NRB Mask",emt:1,aemt:1,pm:1},{skill:"BVM with PEEP Valve",emt:1,aemt:1,pm:1},{skill:"ETCO2 Monitoring",emt:1,aemt:1,pm:1},{skill:"CPAP",emt:1,aemt:1,pm:1},{skill:"Supraglottic Airway (King)",emt:1,aemt:1,pm:1},{skill:"Orotracheal Intubation",emt:0,aemt:0,pm:1},{skill:"Cricothyrotomy",emt:0,aemt:0,pm:1},{skill:"Needle Decompression — Chest",emt:0,aemt:0,pm:1},{skill:"Ventilator Management",emt:0,aemt:0,pm:1}],
 circulation:[{skill:"CPR",emt:1,aemt:1,pm:1},{skill:"Mechanical Compression Device",emt:1,aemt:1,pm:1},{skill:"AED",emt:1,aemt:1,pm:1},{skill:"Manual Defibrillation",emt:0,aemt:1,pm:1},{skill:"12-Lead EKG Acquisition",emt:1,aemt:1,pm:1},{skill:"12-Lead EKG Interpretation",emt:0,aemt:0,pm:1},{skill:"Limb Lead Interpretation",emt:0,aemt:1,pm:1},{skill:"Transcutaneous Pacing",emt:0,aemt:0,pm:1},{skill:"Synchronized Cardioversion",emt:0,aemt:0,pm:1}],
