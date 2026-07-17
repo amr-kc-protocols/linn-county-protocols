@@ -37,7 +37,7 @@ function renderPatientBar(){
     var mode=(PT&&PT.mode)||'adult';
     panel='<div class="pt-form">'+
       '<div class="pt-mode-row"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds">Pediatric</button></div>'+
-      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptSet">Set</button></div>'+
+      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
       '<div class="pt-brose" id="ptBrose" style="display:'+(mode==='peds'?'block':'none')+'"><div class="pt-brose-label">Broselow color (fallback — measure with tape when available)</div><div class="pt-brose-row">'+
         BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'"></button>';}).join('')+
       '</div></div></div>';
@@ -51,36 +51,64 @@ function wirePatientBar(){
   var chip=ge('ptChip');
   if(chip)chip.onclick=function(){ptPanelOpen=!ptPanelOpen;renderPatientBar();if(ptPanelOpen){var w=ge('ptWeight');if(w){if(PT)w.value=PT.kg;w.focus();}}};
   var clr=ge('ptClear');
-  if(clr)clr.onclick=function(){PT=null;ptPanelOpen=false;savePT();renderPatientBar();render();};
-  document.querySelectorAll('.pt-mode-btn').forEach(function(b){
-    b.onclick=function(){
-      document.querySelectorAll('.pt-mode-btn').forEach(function(x){x.classList.remove('active');});
-      b.classList.add('active');
-      var br=ge('ptBrose');if(br)br.style.display=b.dataset.mode==='peds'?'block':'none';
-    };
-  });
-  var setBtn=ge('ptSet');
-  if(setBtn)setBtn.onclick=function(){
-    var raw=parseFloat(ge('ptWeight').value);
-    if(!raw||raw<=0)return;
+  if(clr)clr.onclick=function(){PT=null;ptPanelOpen=false;savePT();renderPatientBar();softRender();};
+  // Mode explicitly chosen by the user stops the weight-based auto-suggest
+  var userPickedMode=!!PT;
+  function activeMode(){var b=document.querySelector('.pt-mode-btn.active');return b?b.dataset.mode:'adult';}
+  function setModeUI(mode){
+    document.querySelectorAll('.pt-mode-btn').forEach(function(x){x.classList.toggle('active',x.dataset.mode===mode);});
+    var br=ge('ptBrose');if(br)br.style.display=mode==='peds'?'block':'none';
+  }
+  function updateChipLive(){
+    var c=ge('ptChip');
+    if(c&&PT){c.classList.add('set');c.textContent='⚖ '+PT.label;}
+  }
+  // Live apply: doses update as the weight is typed — no Set button.
+  function applyFromForm(){
+    var w=ge('ptWeight');if(!w)return;
+    var raw=parseFloat(w.value);
+    if(!raw||raw<=0)return; // incomplete input — keep last applied patient
     var lbs=ge('ptLbs').classList.contains('active');
     var kg=Math.min(lbs?raw*.4536:raw,300);
-    var mode=document.querySelector('.pt-mode-btn.active').dataset.mode;
-    PT={kg:+kg.toFixed(1),mode:mode,label:+kg.toFixed(1)+' kg'+(lbs?' ('+raw+' lbs)':'')+' · '+(mode==='peds'?'Peds':'Adult')};
-    ptPanelOpen=false;savePT();renderPatientBar();render();
-  };
+    PT={kg:+kg.toFixed(1),mode:activeMode(),label:+kg.toFixed(1)+' kg'+(lbs?' ('+raw+' lbs)':'')+' · '+(activeMode()==='peds'?'Peds':'Adult')};
+    savePT();updateChipLive();softRender();
+  }
+  var applyTimer=null;
+  function applySoon(){clearTimeout(applyTimer);applyTimer=setTimeout(applyFromForm,180);}
+  document.querySelectorAll('.pt-mode-btn').forEach(function(b){
+    b.onclick=function(){userPickedMode=true;setModeUI(b.dataset.mode);applyFromForm();};
+  });
+  var doneBtn=ge('ptDone');
+  if(doneBtn)doneBtn.onclick=function(){applyFromForm();ptPanelOpen=false;renderPatientBar();};
   var kgBtn=ge('ptKg'),lbsBtn=ge('ptLbs');
-  if(kgBtn)kgBtn.onclick=function(){kgBtn.classList.add('active');lbsBtn.classList.remove('active');};
-  if(lbsBtn)lbsBtn.onclick=function(){lbsBtn.classList.add('active');kgBtn.classList.remove('active');};
+  if(kgBtn)kgBtn.onclick=function(){kgBtn.classList.add('active');lbsBtn.classList.remove('active');applyFromForm();};
+  if(lbsBtn)lbsBtn.onclick=function(){lbsBtn.classList.add('active');kgBtn.classList.remove('active');applyFromForm();};
   var wIn=ge('ptWeight');
-  if(wIn)wIn.addEventListener('keydown',function(e){if(e.key==='Enter'&&setBtn)setBtn.onclick();});
+  if(wIn){
+    wIn.addEventListener('input',function(){
+      if(!userPickedMode){
+        var raw=parseFloat(wIn.value);
+        if(raw>0){var lbs=ge('ptLbs').classList.contains('active');setModeUI((lbs?raw*.4536:raw)<=36?'peds':'adult');}
+      }
+      applySoon();
+    });
+    wIn.addEventListener('keydown',function(e){if(e.key==='Enter'&&doneBtn)doneBtn.onclick();});
+  }
   document.querySelectorAll('.pt-color').forEach(function(b){
     b.onclick=function(){
       var bz=BROSELOW[parseInt(b.dataset.bi)];
       PT={kg:bz.kg,mode:'peds',label:'Broselow '+bz.c+' ~'+bz.kg+' kg'};
-      ptPanelOpen=false;savePT();renderPatientBar();render();
+      ptPanelOpen=false;savePT();renderPatientBar();softRender();
     };
   });
+}
+
+// Re-render content without the entrance animation or losing scroll —
+// used for live updates (typed weight, cleared patient).
+function softRender(){
+  var y=window.scrollY;
+  render(false);
+  window.scrollTo(0,y);
 }
 
 // ── RENDER FUNCTIONS ─────────────────────────────────────────
@@ -93,23 +121,25 @@ function getScopeClass(s){
   return'scope-multi';
 }
 
-function renderProtocols(q){
+function cardCls(animate,i){return animate?'card-appear" style="animation-delay:'+(i*.03)+'s"':'"';}
+
+function renderProtocols(q,animate){
   const c=document.getElementById('content');let html='',shown=0;
   SECTIONS.protocols.forEach(sec=>{
     const f=q?sec.items.filter(i=>i.title.toLowerCase().includes(q)||(i.body&&i.body.toLowerCase().includes(q))):sec.items;
     if(!f.length)return;shown+=f.length;
     html+='<div class="section-header"><span class="section-icon">'+sec.icon+'</span><span class="section-label">'+sec.section+'</span></div>';
-    f.forEach((item,i)=>{html+='<div class="protocol-card card-appear" style="animation-delay:'+(i*.03)+'s" data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron">›</span></div></div>';});
+    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron">›</span></div></div>';});
   });
   if(!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No protocols match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
 }
 
-function renderFormulary(q){
+function renderFormulary(q,animate){
   const c=document.getElementById('content');
   const f=q?FORMULARY.filter(d=>d.name.toLowerCase().includes(q)||d.cls.toLowerCase().includes(q)||(d.dose&&d.dose.toLowerCase().includes(q))):FORMULARY;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card card-appear" style="animation-delay:'+(i*.02)+'s"><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body"><div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+ptPanelHtml(ptRules(d.name))+'</div></div>').join('')+'</div>';
+  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>').join('')+'</div>';
 }
 
 function renderScope(q){
@@ -126,11 +156,11 @@ function renderScope(q){
   c.innerHTML=html;
 }
 
-function renderOps(q){
+function renderOps(q,animate){
   const c=document.getElementById('content');
   const f=q?OPS_DATA.filter(o=>o.title.toLowerCase().includes(q)||o.body.toLowerCase().includes(q)):OPS_DATA;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No guidelines match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML=f.map((item,i)=>'<div class="protocol-card card-appear" style="animation-delay:'+(i*.04)+'s" data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron">›</span></div></div>').join('');
+  c.innerHTML=f.map((item,i)=>'<div class="protocol-card '+cardCls(animate,i)+' data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron">›</span></div></div>').join('');
 }
 
 function renderMAI(){
@@ -161,12 +191,12 @@ function calcMAIDoses(){
   drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">'+(d.hi?(d.lo.toFixed(1)+'–'+d.hi.toFixed(1)):d.lo.toFixed(1))+' <span>'+(d.unit)+'</span></div>'+'<div style="font-size:11px;color:var(--clay);margin-top:3px">'+(d.note)+'</div></div>').join('');
 }
 
-function render(){
+function render(animate){
   const q=searchQuery.trim().toLowerCase();
-  if(currentTab==='protocols')renderProtocols(q);
-  else if(currentTab==='formulary')renderFormulary(q);
+  if(currentTab==='protocols')renderProtocols(q,animate);
+  else if(currentTab==='formulary')renderFormulary(q,animate);
   else if(currentTab==='scope')renderScope(q);
-  else if(currentTab==='ops')renderOps(q);
+  else if(currentTab==='ops')renderOps(q,animate);
   else if(currentTab==='mai')renderMAI();
 }
 
@@ -214,7 +244,7 @@ document.querySelectorAll('.nav-tab').forEach(function(tab){
     tab.classList.add('active');
     currentTab=tab.dataset.tab;
     window.scrollTo(0,0);
-    render();
+    render(true);
   });
 });
 document.getElementById('searchInput').addEventListener('input',function(e){
@@ -236,4 +266,4 @@ document.getElementById('content').addEventListener('click',function(e){
 });
 document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
 renderPatientBar();
-render();
+render(true);
