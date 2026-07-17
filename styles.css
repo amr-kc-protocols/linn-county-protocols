@@ -85,7 +85,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .mai-calc{background:var(--bark);border:2px solid var(--wheat);border-radius:6px;padding:14px;margin-bottom:18px}
 .mai-calc-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--wheat);margin-bottom:10px}
 .weight-input-row{display:flex;gap:8px;align-items:center;margin-bottom:14px}
-.weight-input-row input{flex:1;background:var(--earth);border:1px solid var(--clay);border-radius:4px;color:var(--parchment);font-family:'Courier Prime',monospace;font-size:22px;font-weight:700;padding:8px 12px;outline:none;text-align:center;-webkit-appearance:none}
+.weight-input-row input{flex:1;min-width:0;background:var(--earth);border:1px solid var(--clay);border-radius:4px;color:var(--parchment);font-family:'Courier Prime',monospace;font-size:22px;font-weight:700;padding:8px 12px;outline:none;text-align:center;-webkit-appearance:none}
 .weight-unit-btn{background:var(--earth);border:1px solid var(--clay);border-radius:4px;color:var(--straw);font-family:'Courier Prime',monospace;font-size:13px;padding:8px 12px;cursor:pointer;white-space:nowrap}
 .weight-unit-btn.active{background:var(--clay);color:var(--earth);font-weight:700}
 .calc-results{display:grid;gap:8px}
@@ -197,7 +197,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .pt-brose-label{font-family:'Courier Prime',monospace;font-size:10px;color:var(--clay);letter-spacing:.5px;margin-bottom:6px}
 .pt-brose-row{display:flex;gap:6px;flex-wrap:wrap}
 .pt-color{width:34px;height:34px;border-radius:4px;border:2px solid rgba(0,0,0,.4);cursor:pointer}
-.pt-form{animation:ptSlide .18s ease;max-height:min(62vh,520px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.pt-form{animation:ptSlide .18s ease;max-height:min(62vh,520px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .pt-quick{margin-top:12px;border-top:1px solid var(--bark);padding-top:2px}
 .pt-q-group{font-family:'Courier Prime',monospace;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin:10px 0 3px}
 .pt-q-row{display:flex;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(196,144,96,.14)}
