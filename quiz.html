@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#2C1810">
 <title>Linn County EMS &mdash; Quiz</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%232C1810'/%3E%3Cg fill='none' stroke='%23D4A96A' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M12 4L4 8l8 4 8-4-8-4z'/%3E%3Cpath d='M4 16l8 4 8-4'/%3E%3Cpath d='M4 12l8 4 8-4'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
@@ -156,7 +157,7 @@ function startQuiz(lvl,missedOnly){
   QS.level=lvl;QS.current=0;QS.score=0;QS.history=[];
   if(missedOnly&&QS.missedIds.length){QS.questions=shuffleQ(QD[lvl].filter(q=>QS.missedIds.includes(q.id)));}
   else{QS.questions=shuffleQ(QD[lvl]);}
-  QS.view='active';renderQuiz();
+  QS.view='active';window.scrollTo(0,0);renderQuiz();
 }
 function renderQuiz(){
   var c=document.getElementById('content');
