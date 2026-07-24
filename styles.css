@@ -260,9 +260,9 @@ body{font-family:var(--f-body);background:var(--navy);color:var(--ice);font-size
 .hdr-act:active{background:rgba(255,255,255,.12)}
 
 /* ── Home screen ───────────────────────────────────────────────────
-   Reference sections carry the crimson accent; education carries
-   amber, so continuing-education material never reads as a standing
-   order at a glance. */
+   Reference sections carry the crimson accent; training carries
+   amber, so study material never reads as a standing order at a
+   glance. */
 .home{padding:0 0 34px}
 .home-hero{padding:18px 16px 15px;text-align:center;border-bottom:1px solid var(--navy-line)}
 .home-hero-title{font-family:var(--f-display);font-size:23px;color:var(--white);line-height:1.15}

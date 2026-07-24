@@ -215,9 +215,9 @@ function calcMAIDoses(){
 }
 
 // ── HOME ─────────────────────────────────────────────────────
-// Landing screen. Reference sections and continuing education are
-// deliberately separated: education is amber, badged CE, and carries
-// an explicit note that it is not a standing order.
+// Landing screen. Reference material and training material are
+// deliberately separated: training is amber, badged, and carries an
+// explicit note that it is neither a standing order nor CE credit.
 var HOME_TILES=[
   ['protocols','i-book','Protocols','Standing orders by category','var(--crimson-br)'],
   ['formulary','i-pill','Formulary','2026 carried medications','var(--crimson-br)'],
@@ -264,14 +264,14 @@ function renderHome(){
      '<span class="qa-label">Full PDF</span><span class="qa-sub">Signed 2026 protocol document</span></a>';
   h+='</div>';
 
-  h+='<div class="home-sec edu"><span class="home-sec-label">Education &amp; CE</span></div>';
-  h+='<div class="edu-disclaimer"><span>&#9432;</span><span>Training material for continuing education &mdash; <b>not</b> Linn County standing orders. Field practice follows the protocols and formulary above.</span></div>';
+  h+='<div class="home-sec edu"><span class="home-sec-label">Training &amp; Study</span></div>';
+  h+='<div class="edu-disclaimer"><span>&#9432;</span><span>Study material &mdash; <b>not</b> Linn County standing orders, and <b>not</b> accredited CE. Nothing here counts toward license or certification renewal. Field practice follows the protocols and formulary above.</span></div>';
   h+='<div class="edu-grid" style="margin-top:10px">';
   var ap=academyProgress();
   var apLine=ap?(ap.certified?'Certificate earned &middot; 8 of 8 modules':(ap.done?ap.done+' of 8 modules passed':'Not started &middot; 8 modules')):'Not started &middot; 8 modules';
   h+='<a class="edu-tile" href="airway-academy.html">'+
      '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-cap"></use></svg></span>'+
-     '<span class="edu-body"><span class="edu-top"><span class="edu-name">Airway &amp; RSI Academy</span><span class="edu-badge">CE</span></span>'+
+     '<span class="edu-body"><span class="edu-top"><span class="edu-name">Airway &amp; RSI Academy</span><span class="edu-badge">Training</span></span>'+
      '<span class="edu-sub">Interactive course &mdash; the decision to intubate, the difficult airway, and physiologic optimization</span>'+
      '<span class="edu-prog">'+apLine+'</span></span><span class="edu-arr">&rsaquo;</span></a>';
   h+='<a class="edu-tile" href="quiz.html">'+
