@@ -1,5 +1,5 @@
 
-let currentTab='protocols',searchQuery='';
+let currentTab='home',searchQuery='';
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -214,9 +214,79 @@ function calcMAIDoses(){
   drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">'+(d.hi?(d.lo.toFixed(1)+'–'+d.hi.toFixed(1)):d.lo.toFixed(1))+' <span>'+(d.unit)+'</span></div>'+'<div style="font-size:11px;color:var(--steel);margin-top:3px">'+(d.note)+'</div></div>').join('');
 }
 
+// ── HOME ─────────────────────────────────────────────────────
+// Landing screen. Reference sections and continuing education are
+// deliberately separated: education is amber, badged CE, and carries
+// an explicit note that it is not a standing order.
+var HOME_TILES=[
+  ['protocols','i-book','Protocols','Standing orders by category','var(--crimson-br)'],
+  ['formulary','i-pill','Formulary','2026 carried medications','var(--crimson-br)'],
+  ['scope','i-badge','Scope','EMT / AEMT / Paramedic','var(--sky)'],
+  ['ops','i-truck','Ops','Operational guidelines','var(--sky)'],
+  ['mai','i-syringe','MAI','Medication-assisted intubation','var(--crimson-br)']
+];
+
+function academyProgress(){
+  try{
+    var s=JSON.parse(localStorage.getItem('airway_academy_v1')||'null');
+    if(!s)return null;
+    var mods=s.modules||{},done=0;
+    Object.keys(mods).forEach(function(k){if(mods[k]&&mods[k].passed)done++;});
+    return {done:done,certified:!!s.finalPassed};
+  }catch(e){return null;}
+}
+
+function renderHome(){
+  var h='<div class="home">';
+  h+='<div class="home-hero"><div class="home-hero-title">Linn County EMS</div>'+
+     '<div class="home-hero-sub">2026 Standing Orders<br>Dr. Ameet Deshmukh, MD</div></div>';
+
+  // Patient weight — drives every computed dose in the app
+  if(PT){
+    h+='<button type="button" class="home-pt set" data-goto="patient"><span class="home-pt-ico">&#9878;</span>'+
+       '<span class="home-pt-body"><span class="home-pt-val">'+esc(PT.label)+'</span>'+
+       '<span class="home-pt-lbl">Doses computed for this patient</span></span><span class="home-pt-arr">&rsaquo;</span></button>';
+  }else{
+    h+='<button type="button" class="home-pt" data-goto="patient"><span class="home-pt-ico">&#9878;</span>'+
+       '<span class="home-pt-body"><span class="home-pt-val">Set patient weight</span>'+
+       '<span class="home-pt-lbl">Unlocks weight-based dosing everywhere</span></span><span class="home-pt-arr">&rsaquo;</span></button>';
+  }
+
+  h+='<div class="home-sec"><span class="home-sec-label">Protocols &amp; Reference</span></div>';
+  h+='<div class="qa-grid">';
+  HOME_TILES.forEach(function(t){
+    h+='<button type="button" class="qa-tile" data-goto="'+t[0]+'" style="--ac:'+t[4]+'">'+
+       '<span class="qa-ico"><svg viewBox="0 0 24 24"><use href="#'+t[1]+'"></use></svg></span>'+
+       '<span class="qa-label">'+t[2]+'</span><span class="qa-sub">'+t[3]+'</span></button>';
+  });
+  h+='<a class="qa-tile" href="LinnProtocols-2026.pdf" target="_blank" rel="noopener" style="--ac:var(--steel)">'+
+     '<span class="qa-ico"><svg viewBox="0 0 24 24"><use href="#i-doc"></use></svg></span>'+
+     '<span class="qa-label">Full PDF</span><span class="qa-sub">Signed 2026 protocol document</span></a>';
+  h+='</div>';
+
+  h+='<div class="home-sec edu"><span class="home-sec-label">Education &amp; CE</span></div>';
+  h+='<div class="edu-disclaimer"><span>&#9432;</span><span>Training material for continuing education &mdash; <b>not</b> Linn County standing orders. Field practice follows the protocols and formulary above.</span></div>';
+  h+='<div class="edu-grid" style="margin-top:10px">';
+  var ap=academyProgress();
+  var apLine=ap?(ap.certified?'Certificate earned &middot; 8 of 8 modules':(ap.done?ap.done+' of 8 modules passed':'Not started &middot; 8 modules')):'Not started &middot; 8 modules';
+  h+='<a class="edu-tile" href="airway-academy.html">'+
+     '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-cap"></use></svg></span>'+
+     '<span class="edu-body"><span class="edu-top"><span class="edu-name">Airway &amp; RSI Academy</span><span class="edu-badge">CE</span></span>'+
+     '<span class="edu-sub">Interactive course &mdash; the decision to intubate, the difficult airway, and physiologic optimization</span>'+
+     '<span class="edu-prog">'+apLine+'</span></span><span class="edu-arr">&rsaquo;</span></a>';
+  h+='<a class="edu-tile" href="quiz.html">'+
+     '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>'+
+     '<span class="edu-body"><span class="edu-top"><span class="edu-name">Protocol Quiz</span><span class="edu-badge">Self-test</span></span>'+
+     '<span class="edu-sub">EMT, AEMT and Paramedic question banks with instant feedback</span></span>'+
+     '<span class="edu-arr">&rsaquo;</span></a>';
+  h+='</div></div>';
+  document.getElementById('content').innerHTML=h;
+}
+
 function render(animate){
   const q=searchQuery.trim().toLowerCase();
-  if(currentTab==='protocols')renderProtocols(q,animate);
+  if(currentTab==='home')renderHome();
+  else if(currentTab==='protocols')renderProtocols(q,animate);
   else if(currentTab==='formulary')renderFormulary(q,animate);
   else if(currentTab==='scope')renderScope(q);
   else if(currentTab==='ops')renderOps(q,animate);
@@ -261,18 +331,16 @@ if(backBtnEl){
 }
 document.querySelectorAll('.nav-tab').forEach(function(tab){
   tab.addEventListener('click',function(){
-    if(!tab.dataset.tab)return; // Quiz/PDF are links — don't steal the active tab
+    if(!tab.dataset.tab)return; // link-style tabs don't steal the active state
     closeDetail();
-    document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
-    tab.classList.add('active');
-    currentTab=tab.dataset.tab;
-    window.scrollTo(0,0);
-    render(true);
+    goTab(tab.dataset.tab);
   });
 });
 document.getElementById('searchInput').addEventListener('input',function(e){
   searchQuery=e.target.value;
   document.getElementById('clearBtn').style.display=searchQuery?'block':'none';
+  // Home has nothing to filter — searching from it means "find a protocol"
+  if(currentTab==='home'&&searchQuery){goTab('protocols');return;}
   if(currentTab==='mai')return; // MAI is a fixed procedure page — re-rendering would wipe the calculator
   render();
 });
@@ -283,7 +351,34 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   if(currentTab==='mai')return;
   render();
 });
+// Switch to a tab programmatically, keeping the nav highlight in sync.
+function goTab(name){
+  currentTab=name;
+  document.querySelectorAll('.nav-tab').forEach(function(t){
+    var on=t.dataset.tab===name;
+    t.classList.toggle('active',on);
+    // The tab bar scrolls on narrow phones — keep the active tab visible
+    if(on&&t.scrollIntoView)t.scrollIntoView({block:'nearest',inline:'nearest'});
+  });
+  window.scrollTo(0,0);
+  render(true);
+}
+
 document.getElementById('content').addEventListener('click',function(e){
+  var tile=e.target.closest('[data-goto]');
+  if(tile){
+    var dest=tile.dataset.goto;
+    if(dest==='patient'){
+      ptPanelOpen=true;
+      renderPatientBar();
+      window.scrollTo(0,0);
+      var w=document.getElementById('ptWeight');
+      if(w){if(PT)w.value=PT.kg;w.focus();}
+    }else{
+      goTab(dest);
+    }
+    return;
+  }
   var card=e.target.closest('[data-type]');
   if(card){showDetail(card.dataset.type,card.dataset.id);}
 });

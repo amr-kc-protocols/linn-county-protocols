@@ -44,8 +44,9 @@ body{font-family:var(--f-body);background:var(--navy);color:var(--ice);font-size
 .search-bar input{flex:1;background:none;border:none;outline:none;color:var(--white);font-family:var(--f-body);font-size:16px;padding:9px 0}
 .search-bar input::placeholder{color:var(--steel);font-style:italic}
 .clear-btn{background:none;border:none;color:var(--steel);cursor:pointer;padding:4px;font-size:18px;line-height:1}
-.nav-tabs{display:flex;border-top:1px solid var(--navy-line)}
-.nav-tab{flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;border-bottom:3px solid transparent;color:var(--steel);font-family:var(--f-mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:11px 4px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+.nav-tabs{display:flex;border-top:1px solid var(--navy-line);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{flex:1 0 auto;white-space:nowrap;display:flex;align-items:center;justify-content:center;background:none;border:none;border-bottom:3px solid transparent;color:var(--steel);font-family:var(--f-mono);font-size:10px;letter-spacing:.3px;text-transform:uppercase;padding:11px 10px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
 .nav-tab.active{color:var(--white);border-bottom-color:var(--crimson-br);background:rgba(200,57,76,.12)}
 #content{position:relative;z-index:1;padding-bottom:30px;min-height:calc(100vh - 120px)}
 .section-header{background:linear-gradient(135deg,var(--navy-2) 0%,#16334F 100%);border-bottom:2px solid var(--crimson);padding:10px 14px;display:flex;align-items:center;gap:8px;margin-top:2px}
@@ -249,6 +250,62 @@ body{font-family:var(--f-body);background:var(--navy);color:var(--ice);font-size
 .sc-emt.on{background:var(--scope-emt);color:#D6F0E2}
 .sc-aemt.on{background:var(--scope-aemt);color:#D2E5F7}
 .sc-pm.on{background:var(--scope-pm);color:#F8D8DC}
+
+/* ── Header quick actions (PDF / Quiz) ─────────────────────────────
+   Mirrors the KC field guide: reference documents sit in the header,
+   not in the tab bar, so the tabs stay reserved for app sections. */
+.hdr-actions{display:flex;gap:2px;flex-shrink:0}
+.hdr-act{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--ice);text-decoration:none;font-family:var(--f-mono);font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 7px;border-radius:5px;min-width:46px;min-height:44px;cursor:pointer}
+.hdr-act svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.hdr-act:active{background:rgba(255,255,255,.12)}
+
+/* ── Home screen ───────────────────────────────────────────────────
+   Reference sections carry the crimson accent; education carries
+   amber, so continuing-education material never reads as a standing
+   order at a glance. */
+.home{padding:0 0 34px}
+.home-hero{padding:18px 16px 15px;text-align:center;border-bottom:1px solid var(--navy-line)}
+.home-hero-title{font-family:var(--f-display);font-size:23px;color:var(--white);line-height:1.15}
+.home-hero-sub{font-family:var(--f-mono);font-size:10px;color:var(--steel);letter-spacing:1.2px;text-transform:uppercase;margin-top:6px;line-height:1.5}
+
+.home-sec{display:flex;align-items:baseline;gap:10px;padding:18px 16px 9px}
+.home-sec-label{font-family:var(--f-mono);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--white);white-space:nowrap}
+.home-sec-note{font-size:11px;color:var(--steel);font-style:italic;line-height:1.35;flex:1;text-align:right}
+.home-sec.edu .home-sec-label{color:var(--warn-lt)}
+
+/* Patient weight — the app's most-used stateful action */
+.home-pt{display:flex;align-items:center;gap:12px;margin:14px 14px 0;padding:13px 14px;border-radius:9px;background:var(--navy-2);border:1px solid var(--navy-line);border-left:3px solid var(--steel);cursor:pointer;width:calc(100% - 28px);text-align:left;font-family:var(--f-body)}
+.home-pt.set{border-left-color:var(--crimson-br);background:rgba(200,57,76,.12)}
+.home-pt:active{background:var(--navy-3)}
+.home-pt-ico{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.home-pt-body{flex:1;min-width:0;display:flex;flex-direction:column}
+.home-pt-val{display:block;font-size:15px;font-weight:700;color:var(--white);line-height:1.2}
+.home-pt-lbl{display:block;font-size:12px;color:var(--steel);margin-top:2px}
+.home-pt-arr{color:var(--steel);font-size:19px;flex-shrink:0}
+
+/* Reference tiles */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px}
+.qa-tile{display:flex;flex-direction:column;gap:7px;background:var(--navy-2);border:1px solid var(--navy-line);border-left:3px solid var(--ac,var(--crimson-br));border-radius:9px;padding:13px;text-align:left;cursor:pointer;font-family:var(--f-body);text-decoration:none;transition:background .12s}
+.qa-tile:active{background:var(--navy-3)}
+.qa-ico{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center}
+.qa-ico svg{width:17px;height:17px;stroke:var(--ac,var(--crimson-br));fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.qa-label{display:block;font-size:15px;font-weight:700;color:var(--white);line-height:1.2}
+.qa-sub{display:block;font-size:12px;color:var(--steel);line-height:1.4}
+
+/* Education tiles — full width, amber, explicitly badged */
+.edu-grid{display:flex;flex-direction:column;gap:10px;padding:0 14px}
+.edu-tile{display:flex;align-items:center;gap:13px;background:var(--navy-2);border:1px solid var(--warn);border-left:3px solid var(--warn-lt);border-radius:9px;padding:14px;text-decoration:none;cursor:pointer;font-family:var(--f-body);text-align:left;width:100%;transition:background .12s}
+.edu-tile:active{background:var(--navy-3)}
+.edu-ico{width:34px;height:34px;border-radius:8px;background:rgba(242,200,121,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.edu-ico svg{width:19px;height:19px;stroke:var(--warn-lt);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.edu-body{flex:1;min-width:0;display:flex;flex-direction:column}
+.edu-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px}
+.edu-name{font-size:15px;font-weight:700;color:var(--white);line-height:1.2}
+.edu-badge{font-family:var(--f-mono);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--warn-dk);background:var(--warn-lt);border-radius:3px;padding:2px 6px;flex-shrink:0}
+.edu-sub{display:block;font-size:12px;color:var(--steel);line-height:1.4}
+.edu-prog{display:block;font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--warn-lt);margin-top:5px}
+.edu-arr{color:var(--steel);font-size:19px;flex-shrink:0}
+.edu-disclaimer{display:flex;gap:8px;margin:10px 14px 0;padding:10px 12px;border-radius:6px;background:var(--warn-dk);border-left:3px solid var(--warn);font-size:12.5px;line-height:1.5;color:var(--warn-lt)}
 
 /* ── Keyboard focus ── */
 :focus-visible{outline:2px solid var(--crimson-br);outline-offset:2px}
