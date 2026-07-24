@@ -18,36 +18,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0EA5E9">
+<meta name="theme-color" content="#1B3A5C">
 <meta name="description" content="Airway & RSI Academy — an interactive course on the decision to intubate, difficult-airway prediction, and physiologic optimization for critical care transport.">
 <meta name="author" content="Jordan Hunter Jones">
 <meta name="copyright" content="© 2026 Jordan Hunter Jones. All rights reserved.">
 <title>Airway &amp; RSI Academy</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%232C1810'/%3E%3Cg fill='none' stroke='%23D4A96A' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M12 4L4 8l8 4 8-4-8-4z'/%3E%3Cpath d='M4 16l8 4 8-4'/%3E%3Cpath d='M4 12l8 4 8-4'/%3E%3C/g%3E%3C/svg%3E">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap');
 :root{
-  /* ── BRIGHT THEME ─────────────────────────────────────────────── */
-  --acc:#0891B2;           /* primary accent — cyan 600 (AA on white) */
-  --acc-br:#06B6D4;        /* brighter cyan for fills/gradients */
-  --acc-dk:#0E7490;        /* deep cyan for inline emphasis */
-  --acc2:#7C3AED;          /* violet — secondary accent */
-  --acc2-br:#8B5CF6;
+  /* ── LINN COUNTY THEME — navy + crimson, matching the protocol app ── */
+  --acc:#1B3A5C;           /* primary accent — county navy (AA on white) */
+  --acc-br:#27506F;        /* lifted navy for fills/gradients */
+  --acc-dk:#12283F;        /* deep navy for inline emphasis */
+  --acc2:#9B2335;          /* county crimson — secondary accent */
+  --acc2-br:#C8394C;
   --hot:#EA580C;           /* orange — warnings / "danger zone" */
   --hot-soft:#FFF1E7;
   --hot-line:#FFCFAC;
-  --acc-soft:#E8FBFF;      /* tinted surface */
-  --acc-line:#A5E8F5;      /* tinted border */
-  --acc2-soft:#F3EEFF;
-  --acc2-line:#D6C6FB;
+  --acc-soft:#EDF3F9;      /* tinted surface */
+  --acc-line:#C3D6E7;      /* tinted border */
+  --acc2-soft:#FCEEF0;
+  --acc2-line:#E7BFC6;
 
   --ink:#0F172A;           /* headings / body text */
   --ink-2:#5A677D;         /* subtext */
   --paper:#FFFFFF;
-  --card:#F5FCFE;          /* light tile — faintly cyan */
-  --card-2:#EEF7FB;
-  --rule:#DDEAF0;
-  --rule-2:#C4DAE4;
+  --card:#F4F8FB;          /* light tile — faintly navy */
+  --card-2:#EBF2F8;
+  --rule:#DCE6EF;
+  --rule-2:#C3D2DF;
   --green:#059669;
   --green-soft:#E7FBF3;
   --green-line:#A7E8CE;
@@ -58,9 +58,10 @@
   --amber-soft:#FEF5E6;
   --amber-line:#F0CE95;
   --lock:#94A3B8;
-  --mono:'Inter', -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --sans:'Inter', -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --grad:linear-gradient(115deg,#06B6D4 0%,#0891B2 42%,#7C3AED 100%);
+  --mono:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --sans:'Source Sans 3', -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display:'Playfair Display', Georgia, serif;
+  --grad:linear-gradient(115deg,#27506F 0%,#1B3A5C 45%,#9B2335 100%);
   --maxw: 760px;
 }
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -95,21 +96,21 @@ header.mon::after{ /* soft glow */
   font-family:var(--sans); font-weight:800; letter-spacing:.11em;
   font-size:11px; color:rgba(255,255,255,.95); text-transform:uppercase;
 }
-.brand b{ color:#BAF6FF; }
+.brand b{ color:#F0A2AC; }
 .status-chip{
   font-family:var(--mono); font-size:10.5px; letter-spacing:.04em; font-weight:600;
   color:#fff; border:1px solid rgba(255,255,255,.45); background:rgba(255,255,255,.16);
   border-radius:999px; padding:4px 10px; white-space:nowrap; backdrop-filter:blur(2px);
 }
 h1.course{
-  font-family:var(--sans); font-weight:800; letter-spacing:-.025em;
+  font-family:var(--display); font-weight:700; letter-spacing:-.005em;
   font-size:29px; line-height:1.08; margin:12px 0 2px; color:#fff;
 }
 .course-sub{ font-family:var(--sans); font-size:13.5px; color:rgba(255,255,255,.88); margin:0 0 12px; font-weight:500; }
 .wave-strip{ height:56px; position:relative; margin:0 -20px; z-index:2; }
 svg.wave{ display:block; width:100%; height:56px; }
 .wave path.trace{
-  fill:none; stroke:#BAF6FF; stroke-width:2.4;
+  fill:none; stroke:#DCE8F3; stroke-width:2.4;
   stroke-linejoin:round; stroke-linecap:round;
   filter:drop-shadow(0 0 5px rgba(186,246,255,.65));
 }
@@ -448,9 +449,9 @@ h2.rd-title{ font-family:var(--sans); font-weight:800; letter-spacing:-.025em; f
 .cert .c-brand{ font-family:var(--sans); font-weight:800; letter-spacing:.14em; font-size:12px; text-transform:uppercase; color:var(--acc-dk); }
 .cert .c-brand b{ color:var(--acc2); }
 .cert .c-kicker{ font-family:var(--sans); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-2); font-weight:700; margin:20px 0 6px; }
-.cert .c-course{ font-family:var(--sans); font-size:22px; font-weight:800; letter-spacing:-.01em; color:var(--ink); line-height:1.2; margin:0 auto; max-width:440px; }
+.cert .c-course{ font-family:var(--display); font-size:22px; font-weight:700; letter-spacing:0; color:var(--ink); line-height:1.2; margin:0 auto; max-width:440px; }
 .cert .c-of{ font-family:var(--sans); font-size:12.5px; color:var(--ink-2); margin:22px 0 6px; }
-.cert .c-name{ font-family:var(--sans); font-size:30px; font-weight:800; letter-spacing:-.01em; color:var(--acc-dk); border-bottom:2px solid var(--acc-br); display:inline-block; padding:0 26px 6px; margin:0 0 4px; }
+.cert .c-name{ font-family:var(--display); font-size:30px; font-weight:700; letter-spacing:0; color:var(--acc-dk); border-bottom:2px solid var(--acc-br); display:inline-block; padding:0 26px 6px; margin:0 0 4px; }
 .cert .c-body{ font-family:var(--sans); font-size:13.5px; color:var(--ink-2); max-width:440px; margin:16px auto 22px; line-height:1.55; }
 .cert .c-wave{ height:24px; margin:6px auto 20px; opacity:.9; }
 .cert .c-wave svg{ height:24px; width:220px; }
@@ -587,7 +588,7 @@ footer.adm{ border-top:1px solid var(--rule); margin-top:36px; padding:16px 0 0;
    ==========================================================================*/
 try{
   if(window.console && console.info){
-    console.info("%cAirway & RSI Academy","font-weight:700;color:#0891B2");
+    console.info("%cAirway & RSI Academy","font-weight:700;color:#1B3A5C");
     console.info("© 2026 Jordan Hunter Jones. All rights reserved. An independent work. Provenance ID FG-PROV-74EA77C4D8C5.");
   }
 }catch(e){}
@@ -2319,7 +2320,7 @@ function renderCertificate(){
     "<div class='c-brand'>AMR Linn County <b>&#x25c6;</b> Clinical Education</div>"+
     "<div class='c-kicker'>Certificate of Completion</div>"+
     "<div class='c-course'>Airway &amp; RSI Academy</div>"+
-    "<div class='c-wave'><svg viewBox='0 0 220 24' fill='none'><path d='"+certWavePath()+"' stroke='#06B6D4' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'/></svg></div>"+
+    "<div class='c-wave'><svg viewBox='0 0 220 24' fill='none'><path d='"+certWavePath()+"' stroke='#9B2335' stroke-width='1.8' stroke-linejoin='round' stroke-linecap='round'/></svg></div>"+
     "<div class='c-of'>awarded to</div>"+
     "<div class='c-name'>"+escapeHtml(name)+"</div>"+
     "<div class='c-body'>A comprehensive "+moduleCount+"-module program in emergency airway management and rapid sequence intubation for critical care transport, covering the indications for intubation, anatomic and physiologic difficult-airway assessment, preoxygenation and hemodynamic optimization, induction and neuromuscular blocking agents, the intubation sequence and first-pass success, post-intubation care, and failed-airway management, with a final examination passed at "+PASS_FINAL+"% or above.</div>"+

@@ -57,6 +57,30 @@ All protocols represent standing medical orders authorized by the Medical Direct
 
 ---
 
+## Look &amp; Feel
+
+The app follows the county's civic identity from [linncountyks.gov](https://linncountyks.gov) — navy surfaces, crimson accents, and the maple-leaf-and-sabre mark from the county seal.
+
+| Token | Value | Used for |
+|---|---|---|
+| `--navy` / `--navy-2` / `--navy-3` | `#12283F` `#1B3A5C` `#27506F` | Page, header/cards, hover |
+| `--crimson` / `--crimson-br` / `--crimson-lt` | `#9B2335` `#C8394C` `#F0A2AC` | Rules, buttons, accent text |
+| `--steel` / `--ice` / `--white` | `#8FA9C2` `#DCE8F3` `#FFFFFF` | Text on navy |
+| `--paper` / `--paper-2` | `#F5F7FA` `#EAEFF5` | Detail and drug views |
+
+Type is Playfair Display (headings), Source Sans 3 (body), and IBM Plex Mono (labels and doses).
+
+Every colour lives in the `:root` block at the top of `styles.css` — retheming the whole app means editing that block, not hunting through rules. Two categories are deliberately **excluded** from the theme and must not be restyled, because the colours carry clinical meaning:
+
+- **Broselow tape colours** (`data.js`) — pink, purple, white, etc. are the standardised tape bands.
+- **START triage colours** (`data.js`) — black / red / yellow / green are the triage categories.
+
+Status colours (green = go, amber = caution, red = stop) are also semantic and stay recognisable rather than matching the brand.
+
+The chrome stays dark on purpose. This is read in a dark ambulance at night, so the navy surfaces carry the lists and the detail and drug views invert to pale paper for long-form reading.
+
+---
+
 ## File Structure
 
 ```
@@ -78,7 +102,7 @@ linn-county/
 All files must be present in the same folder — they reference each other by filename.
 
 **To update protocol content:** edit `data.js`
-**To update styling:** edit `styles.css`
+**To update styling or the colour scheme:** edit `styles.css` (`:root` block)
 **To update quiz questions:** edit `quiz.html`
 **To update academy lessons or exam questions:** edit `airway-academy.html`
 **To update render logic or navigation:** edit `app.js`
