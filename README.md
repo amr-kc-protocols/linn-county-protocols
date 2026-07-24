@@ -30,6 +30,13 @@ Visual EMT / AEMT / Paramedic scope comparison across airway, circulation, vascu
 ### MAI (Medication-Assisted Intubation)
 Step-by-step procedure guide with an integrated **weight-based dose calculator** (kg/lbs) for ketamine, vecuronium, rocuronium, midazolam, and lidocaine IO analgesia.
 
+### Airway &amp; RSI Academy
+Interactive 8-module course on emergency airway management and rapid sequence intubation — the decision to intubate, anatomic and physiologic difficult-airway prediction, preoxygenation and hemodynamic optimization, induction and paralytic agents, the intubation sequence, post-intubation care, and the failed airway. Includes in-lesson widgets (reveal, pick, ordering, calculators, branching scenarios), a module quiz gate, a final exam, and a printable certificate of completion.
+
+Progress is stored locally in the browser (`localStorage`, key `airway_academy_v1`) — nothing is uploaded, and clearing site data resets it.
+
+This is continuing-education material for critical care transport. It is **not** a Linn County standing order — field practice is governed by the MAI protocol and the 2026 formulary in this app.
+
 ### Quiz
 Separate credential-level quiz app with instant feedback:
 - **EMT** — 40 questions
@@ -54,13 +61,14 @@ All protocols represent standing medical orders authorized by the Medical Direct
 
 ```
 linn-county/
-├── index.html    # Main app — protocols, formulary, scope, MAI
-├── styles.css    # Shared stylesheet for both pages
-├── data.js       # Protocol data, formulary, scope, OPS data
-├── app.js        # Render logic and event handlers
-├── sw.js         # Service worker — offline caching
-├── quiz.html     # Self-contained quiz app
-└── vercel.json   # Vercel hosting config (caching headers)
+├── index.html            # Main app — protocols, formulary, scope, MAI
+├── styles.css            # Shared stylesheet for both pages
+├── data.js               # Protocol data, formulary, scope, OPS data
+├── app.js                # Render logic and event handlers
+├── sw.js                 # Service worker — offline caching
+├── quiz.html             # Self-contained quiz app
+├── airway-academy.html   # Self-contained Airway &amp; RSI Academy
+└── vercel.json           # Vercel hosting config (caching headers)
 ```
 
 ---
@@ -72,11 +80,12 @@ All files must be present in the same folder — they reference each other by fi
 **To update protocol content:** edit `data.js`
 **To update styling:** edit `styles.css`
 **To update quiz questions:** edit `quiz.html`
+**To update academy lessons or exam questions:** edit `airway-academy.html`
 **To update render logic or navigation:** edit `app.js`
 
 ### Uploading to GitHub
 
-Use **"Add file" → "Upload files"** — drag all 6 files at once. Do **not** use the "Edit file" paste method — GitHub's web editor truncates large files and will silently corrupt the JavaScript.
+Use **"Add file" → "Upload files"** — drag all 7 files at once. Do **not** use the "Edit file" paste method — GitHub's web editor truncates large files and will silently corrupt the JavaScript.
 
 ### Deploying Updates (Cache Busting)
 

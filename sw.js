@@ -2,12 +2,13 @@
 // ── Linn County EMS Protocols — Service Worker ───────────────
 // Bump CACHE_VERSION any time you deploy updated files so users
 // get fresh content on next visit.
-const CACHE_VERSION = 'linn-ems-v6';
+const CACHE_VERSION = 'linn-ems-v7';
 
 const APP_ASSETS = [
   './',
   './index.html',
   './quiz.html',
+  './airway-academy.html',
   './styles.css',
   './data.js',
   './app.js'
@@ -16,7 +17,9 @@ const APP_ASSETS = [
 // Google Fonts CSS + the font files themselves are cached
 // separately using a stale-while-revalidate strategy.
 const FONT_HOST = 'https://fonts.gstatic.com';
-const FONT_CSS_URL = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&family=Courier+Prime:wght@400;700&display=swap';
+// Match the stylesheet host, not one exact URL — the protocol app and the
+// Airway & RSI Academy each request a different css2 family list.
+const FONT_CSS_HOST = 'https://fonts.googleapis.com';
 const FONTS_CACHE = 'linn-ems-fonts-v1';
 
 // ── INSTALL: pre-cache all local app files ────────────────────
@@ -51,7 +54,7 @@ self.addEventListener('fetch', event => {
   if (url.startsWith('chrome-extension://')) return;
 
   // Font files (gstatic) — cache-first, very long TTL
-  if (url.startsWith(FONT_HOST) || url === FONT_CSS_URL) {
+  if (url.startsWith(FONT_HOST) || url.startsWith(FONT_CSS_HOST)) {
     event.respondWith(
       caches.open(FONTS_CACHE).then(cache =>
         cache.match(event.request).then(cached => {
