@@ -1,5 +1,6 @@
 
 let currentTab='home',searchQuery='';
+var lastTrigger=null; // element to restore focus to when the detail overlay closes
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -49,16 +50,17 @@ function renderPatientBar(){
   var bar=document.getElementById('patientBar');
   if(!bar)return;
   var chip;
-  if(PT)chip='<button class="pt-chip set" id="ptChip">⚖ '+esc(PT.label)+'</button><button class="pt-clear" id="ptClear" aria-label="Clear patient">&times;</button>';
-  else chip='<button class="pt-chip" id="ptChip">⚖ Set Patient Weight</button>';
+  var exp=ptPanelOpen?'true':'false';
+  if(PT)chip='<button class="pt-chip set" id="ptChip" aria-expanded="'+exp+'" aria-controls="ptPanelForm">⚖ '+esc(PT.label)+'</button><button class="pt-clear" id="ptClear" aria-label="Clear patient weight">&times;</button>';
+  else chip='<button class="pt-chip" id="ptChip" aria-expanded="'+exp+'" aria-controls="ptPanelForm">⚖ Set Patient Weight</button>';
   var panel='';
   if(ptPanelOpen){
     var mode=(PT&&PT.mode)||'adult';
-    panel='<div class="pt-form">'+
-      '<div class="pt-mode-row"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds">Pediatric</button></div>'+
-      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"'+(PT?' value="'+PT.kg+'"':'')+'><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
+    panel='<div class="pt-form" id="ptPanelForm">'+
+      '<div class="pt-mode-row" role="group" aria-label="Patient type"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult" aria-pressed="'+(mode==='adult')+'">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds" aria-pressed="'+(mode==='peds')+'">Pediatric</button></div>'+
+      '<div class="weight-input-row"><label class="sr-only" for="ptWeight">Patient weight</label><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"'+(PT?' value="'+PT.kg+'"':'')+'><button class="weight-unit-btn active" id="ptKg" aria-pressed="true">kg</button><button class="weight-unit-btn" id="ptLbs" aria-pressed="false">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
       '<div class="pt-brose" id="ptBrose" style="display:'+(mode==='peds'?'block':'none')+'"><div class="pt-brose-label">Broselow color (fallback — measure with tape when available)</div><div class="pt-brose-row">'+
-        BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'"></button>';}).join('')+
+        BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'" aria-label="Broselow '+b.c+', '+b.range+'"></button>';}).join('')+
       '</div></div>'+
       '<div class="pt-quick" id="ptQuick">'+quickCardInner()+'</div></div>';
   }
@@ -76,7 +78,7 @@ function wirePatientBar(){
   var userPickedMode=!!PT;
   function activeMode(){var b=document.querySelector('.pt-mode-btn.active');return b?b.dataset.mode:'adult';}
   function setModeUI(mode){
-    document.querySelectorAll('.pt-mode-btn').forEach(function(x){x.classList.toggle('active',x.dataset.mode===mode);});
+    document.querySelectorAll('.pt-mode-btn').forEach(function(x){var on=x.dataset.mode===mode;x.classList.toggle('active',on);x.setAttribute('aria-pressed',on?'true':'false');});
     var br=ge('ptBrose');if(br)br.style.display=mode==='peds'?'block':'none';
   }
   function updateChipLive(){
@@ -103,8 +105,9 @@ function wirePatientBar(){
   var doneBtn=ge('ptDone');
   if(doneBtn)doneBtn.onclick=function(){applyFromForm();ptPanelOpen=false;renderPatientBar();};
   var kgBtn=ge('ptKg'),lbsBtn=ge('ptLbs');
-  if(kgBtn)kgBtn.onclick=function(){kgBtn.classList.add('active');lbsBtn.classList.remove('active');applyFromForm();};
-  if(lbsBtn)lbsBtn.onclick=function(){lbsBtn.classList.add('active');kgBtn.classList.remove('active');applyFromForm();};
+  function setUnitUI(on,off){on.classList.add('active');on.setAttribute('aria-pressed','true');off.classList.remove('active');off.setAttribute('aria-pressed','false');}
+  if(kgBtn)kgBtn.onclick=function(){setUnitUI(kgBtn,lbsBtn);applyFromForm();};
+  if(lbsBtn)lbsBtn.onclick=function(){setUnitUI(lbsBtn,kgBtn);applyFromForm();};
   var wIn=ge('ptWeight');
   if(wIn){
     wIn.addEventListener('input',function(){
@@ -152,7 +155,7 @@ function renderProtocols(q,animate){
     const f=q?sec.items.filter(i=>i.title.toLowerCase().includes(q)||(i.body&&i.body.toLowerCase().includes(q))):sec.items;
     if(!f.length)return;shown+=f.length;
     html+='<div class="section-header"><span class="section-icon">'+sec.icon+'</span><span class="section-label">'+sec.section+'</span></div>';
-    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron">›</span></div></div>';});
+    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(item.title)+', scope '+esc(item.scope)+'" data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron" aria-hidden="true">›</span></div></div>';});
   });
   if(!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No protocols match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
@@ -183,7 +186,7 @@ function renderOps(q,animate){
   const c=document.getElementById('content');
   const f=q?OPS_DATA.filter(o=>o.title.toLowerCase().includes(q)||o.body.toLowerCase().includes(q)):OPS_DATA;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No guidelines match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML=f.map((item,i)=>'<div class="protocol-card '+cardCls(animate,i)+' data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron">›</span></div></div>').join('');
+  c.innerHTML=f.map((item,i)=>'<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(item.title)+'" data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron" aria-hidden="true">›</span></div></div>').join('');
 }
 
 function renderMAI(){
@@ -198,18 +201,26 @@ function renderMAI(){
 
 let maiUnit='kg';
 function setUnit(u){maiUnit=u;document.getElementById('btnKg').classList.toggle('active',u==='kg');document.getElementById('btnLbs').classList.toggle('active',u==='lbs');calcMAIDoses();}
-function calcMAIDoses(){
-  const raw=parseFloat(document.getElementById('maiWeight').value);
-  const el=document.getElementById('calcResults');
-  if(!raw||isNaN(raw)||raw<=0){el.innerHTML='<div class="calc-placeholder">Enter patient weight above</div>';return;}
-  const kg=Math.min(maiUnit==='lbs'?raw*.4536:raw,300);
-  const drugs=[
+// Pure dose math, kept separate from rendering so it can be tested
+// directly (test/doses.test.js). Weight is capped at 300 kg here, the
+// same ceiling the patient-weight panel applies.
+function maiDoses(kg){
+  kg=Math.min(kg,300);
+  return [
     {name:'Ketamine (Induction)',detail:'1–1.5 mg/kg IV over 1 min',lo:kg*1,hi:kg*1.5,unit:'mg',note:'Administer over 60 sec. Wait 60 sec for effect.'},
     {name:'Vecuronium (Paralytic)',detail:'0.1 mg/kg IV over 30–60 sec',lo:kg*.1,hi:null,unit:'mg',note:'Onset 60–90 sec. Duration 30–60 min.'},
     {name:'Rocuronium (Paralytic — alt)',detail:'1 mg/kg IV',lo:kg*1,hi:null,unit:'mg',note:'Onset ~45–60 sec. Extended formulary.'},
     {name:'Midazolam (Post-intubation sedation)',detail:'2.5–5 mg IV every 10–30 min',lo:2.5,hi:5,unit:'mg',note:'Fixed dose — not weight-based.'},
     {name:'Lidocaine (IO site analgesia)',detail:'40 mg IO slow push → 10 mL NS → 20 mg IO',lo:40,hi:null,unit:'mg',note:'Fixed adult dose. Peds: 0.5 mg/kg (max 40 mg).'}
   ];
+}
+
+function calcMAIDoses(){
+  const raw=parseFloat(document.getElementById('maiWeight').value);
+  const el=document.getElementById('calcResults');
+  if(!raw||isNaN(raw)||raw<=0){el.innerHTML='<div class="calc-placeholder">Enter patient weight above</div>';return;}
+  const kg=Math.min(maiUnit==='lbs'?raw*.4536:raw,300);
+  const drugs=maiDoses(kg);
   el.innerHTML='<div style="font-family:var(--f-mono);font-size:11px;color:var(--steel);margin-bottom:6px">Patient weight: '+(kg.toFixed(1))+' kg'+(maiUnit==='lbs'?' ('+raw+' lbs)':'')+'</div>'+
   drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">'+(d.hi?(d.lo.toFixed(1)+'–'+d.hi.toFixed(1)):d.lo.toFixed(1))+' <span>'+(d.unit)+'</span></div>'+'<div style="font-size:11px;color:var(--steel);margin-top:3px">'+(d.note)+'</div></div>').join('');
 }
@@ -283,6 +294,15 @@ function renderHome(){
   document.getElementById('content').innerHTML=h;
 }
 
+// Report how many results a search produced. Counted off the rendered
+// DOM so it can't drift from what is on screen.
+function announceResults(){
+  if(!searchQuery){announce(TAB_LABELS[currentTab]||'');return;}
+  var c=document.getElementById('content');
+  var n=c?c.querySelectorAll('.protocol-card,.drug-card,.scope-row').length:0;
+  announce(n+(n===1?' result':' results')+' for '+searchQuery);
+}
+
 function render(animate){
   const q=searchQuery.trim().toLowerCase();
   if(currentTab==='home')renderHome();
@@ -309,6 +329,10 @@ function showDetail(type,id){
   }
   dv.style.display='block';
   dv.scrollTop=0;
+  // Send focus into the overlay and remember where to put it back
+  lastTrigger=document.activeElement;
+  var bb=document.getElementById('backBtn');
+  if(bb)bb.focus();
   // Push a history entry so the phone/browser back button closes the
   // overlay instead of leaving the app.
   if(!(history.state&&history.state.detail))history.pushState({detail:true},'');
@@ -316,6 +340,9 @@ function showDetail(type,id){
 function hideDetail(){
   var dv=document.getElementById('detail-view');
   if(dv){dv.style.display='none';}
+  // Return focus to whatever opened the overlay, so keyboard and screen
+  // reader users don't get dumped at the top of the document.
+  if(lastTrigger&&lastTrigger.focus){lastTrigger.focus();lastTrigger=null;}
 }
 function closeDetail(){
   var dv=document.getElementById('detail-view');
@@ -343,6 +370,7 @@ document.getElementById('searchInput').addEventListener('input',function(e){
   if(currentTab==='home'&&searchQuery){goTab('protocols');return;}
   if(currentTab==='mai')return; // MAI is a fixed procedure page — re-rendering would wipe the calculator
   render();
+  announceResults();
 });
 document.getElementById('clearBtn').addEventListener('click',function(){
   document.getElementById('searchInput').value='';
@@ -351,19 +379,62 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   if(currentTab==='mai')return;
   render();
 });
-// Switch to a tab programmatically, keeping the nav highlight in sync.
+// ── ACCESSIBILITY ────────────────────────────────────────────
+// Short status messages for screen readers. Tab and search changes
+// rewrite #content silently, so without this a non-sighted user gets
+// no feedback that anything happened.
+function announce(msg){
+  var el=document.getElementById('a11yStatus');
+  if(el)el.textContent=msg;
+}
+
+var TAB_LABELS={home:'Home',protocols:'Protocols',formulary:'Formulary',scope:'Scope of practice',ops:'Operational guidelines',mai:'Medication-assisted intubation'};
+
+// Switch to a tab programmatically, keeping the nav highlight, the ARIA
+// state and the roving tabindex in sync.
 function goTab(name){
   currentTab=name;
   document.querySelectorAll('.nav-tab').forEach(function(t){
     var on=t.dataset.tab===name;
     t.classList.toggle('active',on);
+    if(t.hasAttribute('role')){
+      t.setAttribute('aria-selected',on?'true':'false');
+      t.tabIndex=on?0:-1;
+    }
     // The tab bar scrolls on narrow phones — keep the active tab visible
     if(on&&t.scrollIntoView)t.scrollIntoView({block:'nearest',inline:'nearest'});
   });
   window.scrollTo(0,0);
   render(true);
+  announce(TAB_LABELS[name]||name);
 }
 
+// Arrow-key navigation across the tab bar, as a tablist is expected to
+// support. Enter/Space still activate via the normal click handler.
+function wireTabKeys(){
+  var tabs=Array.prototype.slice.call(document.querySelectorAll('.nav-tab[role="tab"]'));
+  tabs.forEach(function(tab,i){
+    tab.addEventListener('keydown',function(e){
+      var next=null;
+      if(e.key==='ArrowRight')next=tabs[(i+1)%tabs.length];
+      else if(e.key==='ArrowLeft')next=tabs[(i-1+tabs.length)%tabs.length];
+      else if(e.key==='Home')next=tabs[0];
+      else if(e.key==='End')next=tabs[tabs.length-1];
+      else return;
+      e.preventDefault();
+      next.focus();
+      if(next.dataset.tab){closeDetail();goTab(next.dataset.tab);}
+    });
+  });
+}
+
+document.getElementById('content').addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  var t=e.target.closest('[data-type],[data-goto]');
+  if(!t)return;
+  e.preventDefault();
+  t.click();
+});
 document.getElementById('content').addEventListener('click',function(e){
   var tile=e.target.closest('[data-goto]');
   if(tile){
@@ -384,4 +455,5 @@ document.getElementById('content').addEventListener('click',function(e){
 });
 document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
 renderPatientBar();
+wireTabKeys();
 render(true);

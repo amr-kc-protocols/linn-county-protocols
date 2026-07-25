@@ -1,0 +1,12 @@
+{
+  "name": "linn-county-protocols",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Linn County EMS protocol reference — tests for the weight-based dose math",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

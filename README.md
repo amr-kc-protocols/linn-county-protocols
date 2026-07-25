@@ -95,6 +95,54 @@ The chrome stays dark on purpose. This is read in a dark ambulance at night, so 
 
 ---
 
+## Tests
+
+The app computes medication doses from patient weight, and two dose bugs have already shipped and been fixed by hand (`3665df6` "Never render a nonzero dose as zero", `274f664` "Cap pediatric weight-based doses at the adult dose"). Both are pinned as regression tests.
+
+```
+npm test
+```
+
+No dependencies — the suite uses `node:test` and `node:assert` only, and runs on every push and pull request via `.github/workflows/test.yml`.
+
+`test/load.js` evaluates `data.js` and `app.js` in a Node sandbox with a stub DOM, so the real dose functions are tested rather than a copy. Alongside the two regressions it checks, across a neonate-to-bariatric weight range, that every rule in `PT_CALC`:
+
+- renders a usable string (never `NaN`, empty, or `undefined`),
+- never renders a zero dose — `0 mg` reads as "give none" and is always a bug,
+- never *decreases* as patient weight increases,
+- stops at its ceiling where one is declared.
+
+Plus Broselow tape ordering, and that every protocol has the fields the UI renders with unique ids.
+
+**If you change a dose, run the tests.** If one fails, assume the dose is wrong before assuming the test is.
+
+---
+
+## Install (PWA)
+
+`manifest.json` makes the app installable — "Add to Home Screen" gives the county badge icon and a standalone window rather than a browser tab. Icons are generated from the same maple-leaf-and-sabre mark as the favicon:
+
+| File | Use |
+|---|---|
+| `icon-192.png` / `icon-512.png` | Android / desktop install |
+| `icon-maskable-512.png` | Android adaptive icon (mark inset to the safe zone) |
+| `apple-touch-icon.png` | iOS home screen |
+
+All are precached by the service worker, so a freshly installed app works offline immediately.
+
+---
+
+## Accessibility
+
+- Skip link to the content on both pages.
+- The tab bar is a real `tablist` — arrow keys, `Home`/`End`, and `aria-selected` kept in sync.
+- Protocol and Ops cards are keyboard-operable (`Enter` / `Space`) and named for screen readers. They were previously `div`s with click handlers, unreachable by keyboard.
+- The detail overlay is a modal dialog: focus moves to the back button on open and returns to the card that opened it on close.
+- Tab switches and search results are announced through a polite live region ("12 results for epi").
+- Controls whose meaning is carried by icon or colour have text labels — the clear button, the Broselow swatches, and quiz answers, which now say "correct answer" / "your answer, incorrect" rather than relying on green and red.
+
+---
+
 ## File Structure
 
 ```
@@ -106,6 +154,9 @@ linn-county/
 ├── sw.js                 # Service worker — offline caching
 ├── quiz.html             # Self-contained quiz app
 ├── airway-academy.html   # Self-contained Airway &amp; RSI Academy
+├── manifest.json         # PWA manifest — install metadata and icons
+├── icon-*.png            # Install icons (192, 512, maskable, apple-touch)
+├── test/                 # Dose math tests — `npm test`
 └── vercel.json           # Vercel hosting config (caching headers)
 ```
 
@@ -123,7 +174,7 @@ All files must be present in the same folder — they reference each other by fi
 
 ### Uploading to GitHub
 
-Use **"Add file" → "Upload files"** — drag all 7 files at once. Do **not** use the "Edit file" paste method — GitHub's web editor truncates large files and will silently corrupt the JavaScript.
+Use **"Add file" → "Upload files"** — drag the app files at once. Do **not** use the "Edit file" paste method — GitHub's web editor truncates large files and will silently corrupt the JavaScript.
 
 ### Deploying Updates (Cache Busting)
 

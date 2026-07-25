@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1B3A5C">
 <title>Linn County EMS &mdash; Quiz</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20580%20580%27%3E%3Crect%20width%3D%27580%27%20height%3D%27580%27%20rx%3D%2780%27%20fill%3D%27%2312283F%27%2F%3E%3Cg%20transform%3D%27translate%2834%2C20%29%27%3E%3Cpath%20d%3D%27M383.8%20351.7c2.5-2.5%20105.2-92.4%20105.2-92.4l-17.5-7.5c-10-4.9-7.4-11.5-5-17.4%202.4-7.6%2020.1-67.3%2020.1-67.3s-47.7%2010-57.7%2012.5c-7.5%202.4-10-2.5-12.5-7.5s-15-32.4-15-32.4-52.6%2059.9-55.1%2062.3c-10%207.5-20.1-2.5-17.6-12.5%200-10%2027.6-129.6%2027.6-129.6s-30.1%2017.4-40.1%2022.4c-5%202.5-10%202.5-15-5C293.5%2072.3%20255.9%200%20255.9%200s-37.5%2072.3-42.5%2079.8c-5%207.5-10%207.5-15%205-10-5-40.1-22.4-40.1-22.4S185.9%20182%20185.9%20192c2.5%2010-7.5%2020-17.6%2012.5-2.5-2.4-55.1-62.3-55.1-62.3S100.7%20174.6%2098.2%20179.6s-5%209.9-12.5%207.5C75.7%20184.6%2028%20174.6%2028%20174.6S45.7%20234.3%2048.1%20241.9c2.4%206%205%2012.5-5%2017.4L25.6%20266.8s102.7%2089.9%20105.2%2092.4c5.1%205%2010%207.5%205.1%2022.5-5.1%2015-10.1%2035-10.1%2035s95.2-20%20105.3-22.5c8.7-.9%2018.3%202.5%2018.3%2012.5S246%20512%20246%20512h20s-3.4-95.8-3.4-105.8%209.5-13.4%2018.4-12.5c10%202.5%20105.2%2022.5%20105.2%2022.5s-5-20-10-35%200-17.5%205.1-22.5z%27%20fill%3D%27%23FFFFFF%27%2F%3E%3C%2Fg%3E%3Cpath%20d%3D%27M70%2C556Q290%2C596%2C510%2C548%27%20stroke%3D%27%23C8394C%27%20stroke-width%3D%2726%27%20fill%3D%27none%27%20stroke-linecap%3D%27round%27%2F%3E%3C%2Fsvg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +16,7 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<a class="skip-link" href="#content">Skip to quiz</a>
 <div id="header">
   <div class="header-top">
     <div class="badge">
@@ -31,8 +34,16 @@
     <a href="index.html" class="nav-tab" style="text-decoration:none">&#8592; Protocols</a>
   </div>
 </div>
-<div id="content"></div>
+<div id="content" tabindex="-1"></div>
+<div id="a11yStatus" class="sr-only" role="status" aria-live="polite"></div>
 <script>
+
+// Short status messages for screen readers — answer feedback and score
+// changes are otherwise conveyed only by colour and silent DOM swaps.
+function announce(msg){
+  var el=document.getElementById('a11yStatus');
+  if(el)el.textContent=msg;
+}
 
 // ── GOOGLE SHEETS INTEGRATION ─────────────────────────────────
 // Paste your Apps Script Web App URL here after deploying:
@@ -155,7 +166,7 @@ pm:[
 
 function shuffleQ(arr){var a=arr.slice(),i,j,t;for(i=a.length-1;i>0;i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function startQuiz(lvl,missedOnly){
-  QS.level=lvl;QS.current=0;QS.score=0;QS.history=[];
+  QS.level=lvl;QS.current=0;QS.score=0;QS.history=[];QS.answered=-1;
   if(missedOnly&&QS.missedIds.length){QS.questions=shuffleQ(QD[lvl].filter(q=>QS.missedIds.includes(q.id)));}
   else{QS.questions=shuffleQ(QD[lvl]);}
   QS.view='active';window.scrollTo(0,0);renderQuiz();
@@ -188,8 +199,8 @@ function renderQuizQuestion(){
   var pct=Math.round((QS.current/total)*100);
   var lc={emt:'EMT LEVEL',aemt:'AEMT LEVEL',pm:'PARAMEDIC LEVEL'}[QS.level];
   var lk={emt:'var(--go-lt)',aemt:'#A8CDEC',pm:'var(--crimson-lt)'}[QS.level];
-  var opts='<div class="q-opts">'+q.opts.map((o,i)=>'<button class="q-opt" id="qopt-'+(i)+'">'+(o)+'</button>').join('')+'</div>';
-  document.getElementById('content').innerHTML='\n  <div class="quiz-active-hdr"><div class="quiz-active-top"><button class="quiz-quit-btn" id="quiz-quit-btn">× Quit</button><div class="quiz-level-tag" style="color:'+(lk)+'">'+(lc)+'</div><div class="quiz-score-tag" id="qsc">'+(QS.score)+'/'+(QS.current)+'</div></div>\n  <div style="font-family:var(--f-mono);font-size:11px;color:var(--steel);margin-bottom:6px">Question '+(QS.current+1)+' of '+(total)+'</div>\n  <div class="quiz-prog"><div class="quiz-prog-fill" style="width:'+(pct)+'%"></div></div></div>\n  <div class="q-wrap-lc"><div class="q-cat-lc">'+(q.cat)+'</div>\n  <span class="q-type-badge">'+(q.type==='tf'?'TRUE / FALSE':'MULTIPLE CHOICE')+'</span>\n  <div class="q-text-lc">'+(q.q)+'</div>'+(opts)+'<div id="q-fb"></div></div>';
+  var opts='<div class="q-opts" role="group" aria-label="Answer choices">'+q.opts.map((o,i)=>'<button class="q-opt" id="qopt-'+(i)+'">'+(o)+'</button>').join('')+'</div>';
+  document.getElementById('content').innerHTML='\n  <div class="quiz-active-hdr"><div class="quiz-active-top"><button class="quiz-quit-btn" id="quiz-quit-btn">× Quit</button><div class="quiz-level-tag" style="color:'+(lk)+'">'+(lc)+'</div><div class="quiz-score-tag" id="qsc">'+(QS.score)+'/'+(QS.current)+'</div></div>\n  <div style="font-family:var(--f-mono);font-size:11px;color:var(--steel);margin-bottom:6px">Question '+(QS.current+1)+' of '+(total)+'</div>\n  <div class="quiz-prog" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+(pct)+'"><div class="quiz-prog-fill" style="width:'+(pct)+'%"></div></div></div>\n  <div class="q-wrap-lc"><div class="q-cat-lc">'+(q.cat)+'</div>\n  <span class="q-type-badge">'+(q.type==='tf'?'TRUE / FALSE':'MULTIPLE CHOICE')+'</span>\n  <div class="q-text-lc">'+(q.q)+'</div>'+(opts)+'<div id="q-fb"></div></div>';
   var qqBtn=document.getElementById('quiz-quit-btn');
   if(qqBtn)qqBtn.onclick=function(){if(confirm('Quit quiz? Progress will be lost.')){QS.view='home';renderQuiz();}};
   q.opts.forEach(function(_,i){
@@ -198,13 +209,24 @@ function renderQuizQuestion(){
   });
 }
 function handleAnswer(sel){
-  var q=QS.questions[QS.current];var ok=sel===q.ans;
+  var q=QS.questions[QS.current];
+  if(QS.answered===QS.current)return; // already answered this one
+  QS.answered=QS.current;
+  var ok=sel===q.ans;
   if(ok)QS.score++;
   QS.history.push({id:q.id,correct:ok,cat:q.cat,q:q.q,correctOpt:q.opts[q.ans],exp:q.exp});
   var sc=document.getElementById('qsc');if(sc)sc.textContent=QS.score+'/'+(QS.current+1);
-  q.opts.forEach((_,i)=>{var b=document.getElementById('qopt-'+i);if(!b)return;b.style.pointerEvents='none';b.style.cursor='default';if(i===q.ans)b.classList.add('correct');else if(i===sel&&!ok)b.classList.add('wrong');});
+  q.opts.forEach((_,i)=>{
+    var b=document.getElementById('qopt-'+i);if(!b)return;
+    b.style.pointerEvents='none';b.style.cursor='default';
+    b.setAttribute('aria-disabled','true'); // pointer-events alone still allows keyboard activation
+    // Correct/incorrect is otherwise carried by colour only
+    if(i===q.ans){b.classList.add('correct');b.insertAdjacentHTML('beforeend','<span class="sr-only"> — correct answer</span>');}
+    else if(i===sel&&!ok){b.classList.add('wrong');b.insertAdjacentHTML('beforeend','<span class="sr-only"> — your answer, incorrect</span>');}
+  });
   var isLast=QS.current>=QS.questions.length-1;
   var fb=document.getElementById('q-fb');
+  announce((ok?'Correct. ':'Incorrect. ')+q.exp);
   fb.innerHTML='<div class="q-feedback '+(ok?'correct':'wrong')+'"><div class="q-fb-hdr">'+(ok?'Correct':'Incorrect')+'</div><div class="q-fb-exp">'+(q.exp)+'</div></div><button class="q-next-btn" id="q-next">'+(isLast?'See Results':'Next Question')+'</button>';
   document.getElementById('q-next').onclick=function(){
     QS.current++;
@@ -242,7 +264,7 @@ function renderQuizResults(){
 }
 
 // ── BOOT ─────────────────────────────────────────────────────
-var QS={level:null,questions:[],current:0,score:0,history:[],missedIds:[],view:'home'};
+var QS={level:null,questions:[],current:0,score:0,history:[],missedIds:[],view:'home',answered:-1};
 renderQuiz();
 
 if ('serviceWorker' in navigator) {
