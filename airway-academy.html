@@ -23,6 +23,8 @@
 <meta name="author" content="Jordan Hunter Jones">
 <meta name="copyright" content="© 2026 Jordan Hunter Jones. All rights reserved.">
 <title>Airway &amp; RSI Academy</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='4' fill='%232C1810'/%3E%3Cg fill='none' stroke='%23D4A96A' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M12 4L4 8l8 4 8-4-8-4z'/%3E%3Cpath d='M4 16l8 4 8-4'/%3E%3Cpath d='M4 12l8 4 8-4'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
@@ -71,13 +73,16 @@ body{
   font-family:var(--sans); font-size:16px; line-height:1.6;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{ max-width:var(--maxw); margin:0 auto; padding:0 20px; }
+.wrap{ max-width:var(--maxw); margin:0 auto;
+  padding-left:max(20px, env(safe-area-inset-left));
+  padding-right:max(20px, env(safe-area-inset-right)); }
 
 /* ── Back to Protocols ───────────────────────────────────────────── */
 .backlink{
   display:inline-flex; align-items:center; gap:5px;
   font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
-  color:rgba(255,255,255,.92); text-decoration:none; margin:14px 0 0; font-weight:700;
+  color:rgba(255,255,255,.92); text-decoration:none; margin:16px 0 0; font-weight:700;
+  padding:6px 0; min-height:32px;
 }
 .backlink:active{ opacity:.65; }
 
@@ -85,12 +90,18 @@ body{
 header.mon{
   background:var(--grad); color:#fff;
   position:relative; overflow:hidden;
+  /* viewport-fit=cover deliberately extends the page under the status
+     bar and notch, so the inset has to be paid back here or the back
+     link renders underneath the clock. */
+  padding-top:env(safe-area-inset-top, 0px);
 }
 header.mon::after{ /* soft glow */
   content:""; position:absolute; right:-70px; top:-90px; width:280px; height:280px;
   background:radial-gradient(circle,rgba(255,255,255,.28),transparent 68%); pointer-events:none;
 }
-.mon-inner{ max-width:var(--maxw); margin:0 auto; padding:0 20px 2px; position:relative; z-index:2; }
+.mon-inner{ max-width:var(--maxw); margin:0 auto; padding:0 20px 2px; position:relative; z-index:2;
+  padding-left:max(20px, env(safe-area-inset-left));
+  padding-right:max(20px, env(safe-area-inset-right)); }
 .brandrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
 .brand{
   font-family:var(--sans); font-weight:700; letter-spacing:.11em;
@@ -110,12 +121,25 @@ h1.course{
 .wave-strip{ height:56px; position:relative; margin:0 -20px; z-index:2; }
 /* ── Education banner — the page must never read as a standing order ── */
 .edubanner-wrap{ max-width:var(--maxw); margin:16px auto 0; padding:0 20px; }
-.edubanner{ display:flex; gap:10px; align-items:flex-start;
-  padding:12px 14px; border-radius:9px; background:#FEF5E6; border:1px solid #F0CE95;
-  border-left:4px solid #B8791C; color:#5A4008; font-size:13.5px; line-height:1.55; }
-.edubanner b{ color:#3F2C05; }
-.edubanner a{ color:#8A5A0C; font-weight:700; }
-.edubanner-ico{ font-size:15px; flex-shrink:0; line-height:1.4; }
+.edubanner{ padding:10px 13px; border-radius:8px; background:var(--card);
+  border:1px solid var(--rule); color:var(--ink-2); font-size:12.5px; line-height:1.55; }
+.edubanner a{ color:var(--acc); font-weight:600; }
+/* ── Formulary crosswalk ── */
+.xwalk{ margin-top:10px; border:1px solid var(--rule); border-radius:8px; background:var(--paper); }
+.xwalk > summary{ cursor:pointer; padding:11px 13px; font-size:13px; font-weight:700; color:var(--acc-dk); list-style:none; }
+.xwalk > summary::-webkit-details-marker{ display:none; }
+.xwalk > summary::before{ content:"\25B8"; display:inline-block; margin-right:8px; transition:transform .15s; }
+.xwalk[open] > summary::before{ transform:rotate(90deg); }
+.xwalk-lead{ margin:0 13px 10px; font-size:12.5px; line-height:1.55; color:var(--ink-2); }
+.xwalk-t{ width:100%; border-collapse:collapse; font-size:12px; }
+.xwalk-t th,.xwalk-t td{ text-align:left; padding:8px 10px; border-top:1px solid var(--rule); vertical-align:top; line-height:1.5; }
+.xwalk-t th{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); }
+.xwalk-t td:first-child{ font-weight:700; color:var(--ink); white-space:nowrap; }
+.xwalk-t td.ok{ color:var(--ink); }
+.xwalk-t td.warn{ color:#8A3B0B; background:var(--hot-soft); }
+.xwalk-t td.none{ color:var(--ink-2); font-style:italic; }
+.xwalk-foot{ margin:10px 13px 12px; font-size:11.5px; line-height:1.55; color:var(--ink-2); }
+@media(max-width:520px){ .xwalk-t td:first-child{ white-space:normal; } }
 @media print{ .edubanner{ break-inside:avoid; } }
 svg.wave{ display:block; width:100%; height:56px; }
 .wave path.trace{
@@ -325,6 +349,13 @@ h2.rd-title{ font-family:var(--sans); font-weight:700; letter-spacing:-.025em; f
 .dc-nm small{ display:block; font-size:11.5px; color:var(--ink-2); font-weight:500; margin-top:1px; }
 .dc-v{ font-family:var(--mono); font-weight:700; font-size:16px; color:var(--acc-dk); white-space:nowrap; }
 .dc-r.shock .dc-v{ color:var(--hot); }
+.dc-linn{ display:block; font-size:11px; line-height:1.45; margin-top:4px; color:var(--acc-dk); font-weight:600; }
+.dc-linn.none{ color:var(--ink-2); font-weight:500; font-style:italic; }
+.dc-r.county{ background:var(--acc-soft); }
+/* Inline county note wherever a taught dose exceeds the Linn protocol */
+.linn-note{ display:block; margin-top:8px; padding:8px 10px; border-left:3px solid var(--acc);
+  background:var(--acc-soft); border-radius:0 5px 5px 0; font-size:12px; line-height:1.5; color:var(--acc-dk); font-weight:500; }
+.linn-note b{ color:var(--acc-dk); }
 .dc-foot{ font-size:12px; color:var(--ink-2); line-height:1.5; margin-top:10px; }
 
 /* comparison */
@@ -527,9 +558,29 @@ footer.adm{ border-top:1px solid var(--rule); margin-top:36px; padding:16px 0 0;
 
 <div class="edubanner-wrap">
 <div class="edubanner">
-  <span class="edubanner-ico" aria-hidden="true">&#9432;</span>
-  <span><b>This is training, not a protocol.</b> The Airway &amp; RSI Academy is study material for critical care transport. It is <b>not</b> a Linn County standing order &mdash; field practice follows the <a href="index.html">MAI protocol and 2026 formulary</a>, and where doses differ the protocol governs. It is <b>not</b> accredited continuing education and does <b>not</b> count toward license or certification renewal.</span>
+  Training course &mdash; not a Linn County standing order, and not accredited CE at this time. Field practice follows the <a href="index.html">MAI protocol and 2026 formulary</a>; where doses differ, the protocol governs.
 </div>
+  <details class="xwalk">
+    <summary>How this course lines up with the Linn County 2026 formulary</summary>
+    <p class="xwalk-lead">This course teaches critical care transport RSI. Linn County field practice is the
+      <a href="index.html">MAI protocol</a>, which is narrower. Where the two differ, <b>the protocol governs.</b></p>
+    <table class="xwalk-t">
+      <thead><tr><th>Agent</th><th>This course teaches</th><th>Linn County 2026</th></tr></thead>
+      <tbody>
+        <tr><td>Ketamine</td><td>1&ndash;2 mg/kg induction</td><td class="ok">MAI induction <b>1&ndash;1.5 mg/kg</b> IV over 1 min &mdash; PM scope</td></tr>
+        <tr><td>Rocuronium</td><td>1.2 mg/kg, and calls 0.6 mg/kg the common error</td><td class="warn">MAI <b>1 mg/kg</b> IV (formulary 0.5&ndash;1 mg/kg). Extended formulary, PM only. <b>Do not give 1.2 mg/kg in Linn County.</b></td></tr>
+        <tr><td>Vecuronium</td><td>not covered</td><td class="ok"><b>Linn's primary NMBA</b> &mdash; 0.1 mg/kg IV slow over 30&ndash;60 sec, PM only</td></tr>
+        <tr><td>Succinylcholine</td><td>1.5 mg/kg, with a full contraindication discussion</td><td class="none">Not on the formulary &mdash; not carried</td></tr>
+        <tr><td>Etomidate</td><td>0.3 mg/kg, halved in shock</td><td class="none">Not on the formulary &mdash; not carried</td></tr>
+        <tr><td>Propofol</td><td>1.5&ndash;2.5 mg/kg</td><td class="none">Not on the formulary &mdash; not carried</td></tr>
+        <tr><td>Midazolam</td><td>post-intubation sedation</td><td class="ok">MAI maintenance <b>2.5&ndash;5 mg</b> IV every 10&ndash;30 min</td></tr>
+        <tr><td>Sugammadex</td><td>16 mg/kg reversal</td><td class="none">Not available prehospital</td></tr>
+      </tbody>
+    </table>
+    <p class="xwalk-foot">The agents Linn County does not carry are still worth understanding &mdash; you will meet them
+      on interfacility transfers and in receiving facilities, and the reasoning behind choosing between them is the
+      point of the course. Just do not carry their doses into the field.</p>
+  </details>
 </div>
 
 <div class="storagewarn hidden print-hide" id="storageWarn">Your device isn't saving progress (private browsing or storage is full) — quiz results and your certificate may not persist after you close this page.</div>
@@ -713,7 +764,7 @@ function wDoseCalc(){
     "</div>"+
     "<div class='dc-tbl'><div class='dc-r hd'><div>Agent</div><div>Dose</div></div>"+
       "<div class='dc-out'></div></div>"+
-    "<p class='dc-foot'>Always confirm against your service's standing orders. Doses shown are common adult ranges for rapid sequence intubation.</p></div>";
+    "<p class='dc-foot'>Doses in the <b>Dose</b> column are common adult ranges taught in this course &mdash; they are not Linn County standing orders. Where a row names a Linn County dose, <b>that</b> is the one authorised in the field. Agents marked <i>not carried</i> are not on the Linn County 2026 formulary.</p></div>";
 }
 function wCompare(title, sub, colA, colB, rows){
   // rows = [label, valueA, valueB, takeaway]
@@ -1236,7 +1287,7 @@ var MODULES = [
       { h:"3", t:"Side by side", html:
         wCompare("Succinylcholine vs rocuronium","Tap any row for the practical takeaway.","Succinylcholine","Rocuronium",[
           ["Dose (RSI)","1.5 mg/kg IV<br>(2 mg/kg in small children; 3&ndash;4 mg/kg IM if no IV)","1.2 mg/kg IV<br>— note this is double the routine 0.6 mg/kg intubating dose",
-           "The commonest rocuronium error is giving 0.6 mg/kg for an RSI. At that dose onset is too slow. RSI requires <b>1.2 mg/kg</b>."],
+           "The commonest rocuronium error is giving 0.6 mg/kg for an RSI. At that dose onset is too slow. RSI requires <b>1.2 mg/kg</b>. <span class='linn-note'>Linn County: the MAI protocol authorises rocuronium at <b>1 mg/kg</b> (formulary 0.5&ndash;1 mg/kg), and vecuronium 0.1 mg/kg is the primary NMBA. Do not give 1.2 mg/kg here &mdash; the protocol governs.</span>"],
           ["Onset","45&ndash;60 seconds","45&ndash;60 seconds at the full 1.2 mg/kg dose",
            "At proper RSI dosing the onset times are effectively equivalent. Speed is <b>not</b> a reason to choose succinylcholine."],
           ["Duration","6&ndash;10 minutes","45&ndash;70 minutes or longer",
@@ -1250,7 +1301,7 @@ var MODULES = [
           ["Reversal","None (wait it out)","Sugammadex 16 mg/kg for immediate reversal of an RSI dose",
            "Sugammadex genuinely reverses rocuronium within minutes — but it is rarely carried prehospital. Do not plan a rescue around a drug you do not have."]
         ])+
-        "<p>Read the onset row again, because it overturns the most common reason people give for choosing succinylcholine. At a proper RSI dose of 1.2 mg/kg, rocuronium works just as fast. The choice is therefore about duration, contraindications, and what you intend to do afterwards.</p>"
+        "<p>Read the onset row again, because it overturns the most common reason people give for choosing succinylcholine. At a proper RSI dose of 1.2 mg/kg, rocuronium works just as fast. <span class='linn-note'>Linn County: the MAI protocol authorises rocuronium at <b>1 mg/kg</b> (formulary 0.5&ndash;1 mg/kg), and vecuronium 0.1 mg/kg is the primary NMBA. Do not give 1.2 mg/kg here &mdash; the protocol governs.</span> The choice is therefore about duration, contraindications, and what you intend to do afterwards.</p>"
       },
       { h:"4", t:"When succinylcholine is dangerous", html:
         "<p>Succinylcholine's contraindications share one mechanism. When a muscle loses its nerve supply, is burned, or is crushed, it responds by <strong>up-regulating acetylcholine receptors</strong> — spreading them across the whole muscle membrane instead of concentrating them at the junction. Give succinylcholine to that muscle and you depolarize an enormous receptor population at once, dumping a potentially lethal load of potassium into the circulation.</p>"+
@@ -1299,7 +1350,7 @@ var MODULES = [
       { h:"8", t:"Putting it together", html:
         wBranch("Decision point","You are transferring a 34-year-old, 80 kg, four days after extensive flame burns to the torso and both arms. He has become progressively more hypoxic with worsening secretions and now requires intubation. He has good IV access and a normal blood pressure. <b>Which paralytic, and at what dose?</b>",[
           ["Succinylcholine 120 mg (1.5 mg/kg) — fastest onset","bad","<span class='fbk'>Dangerous</span>This is the exact scenario succinylcholine's contraindication exists for. Four days post-burn is well past the roughly 24–72 hour window for acetylcholine receptor up-regulation, and giving succinylcholine to densely up-regulated muscle can release enough potassium to cause cardiac arrest. Note also that it would have been acceptable on day one — the timing is what matters, and interfacility transfers are precisely where this is missed."],
-          ["Rocuronium 96 mg (1.2 mg/kg)","good","<span class='fbk'>Correct</span>Rocuronium carries none of the hyperkalemia risk, and at 1.2 mg/kg its onset matches succinylcholine's, so nothing is lost. 1.2 × 80 = 96 mg. Its 45–70 minute duration suits a patient heading onto a ventilator for a transfer — but it makes immediate post-intubation sedation and analgesia mandatory, since it will far outlast the induction agent."],
+          ["Rocuronium 96 mg (1.2 mg/kg)","good","<span class='fbk'>Correct</span>Rocuronium carries none of the hyperkalemia risk, and at 1.2 mg/kg its onset matches succinylcholine's, so nothing is lost. 1.2 × 80 = 96 mg. <span class='linn-note'>Linn County: the MAI protocol authorises rocuronium at <b>1 mg/kg</b> (formulary 0.5&ndash;1 mg/kg), and vecuronium 0.1 mg/kg is the primary NMBA. In Linn County that same patient gets 80 mg &mdash; the protocol governs.</span> Its 45–70 minute duration suits a patient heading onto a ventilator for a transfer — but it makes immediate post-intubation sedation and analgesia mandatory, since it will far outlast the induction agent."],
           ["Rocuronium 48 mg (0.6 mg/kg)","meh","<span class='fbk'>Right drug, wrong dose</span>Rocuronium is correct, but 0.6 mg/kg is the routine intubating dose, not the RSI dose. At 0.6 mg/kg onset is meaningfully slower, which means laryngoscopy on an incompletely relaxed patient, poorer conditions, and a higher chance of a failed first attempt. For RSI give the full 1.2 mg/kg — here, 96 mg."],
           ["No paralytic — sedation alone is safer in burns","bad","<span class='fbk'>Worse conditions</span>Sedation-only intubation produces poorer intubating conditions, lower first-pass success, and more airway trauma. In a burn patient with an airway that is deteriorating and may become progressively harder, a failed first attempt is precisely what you cannot afford. The concern about burns applies to <i>succinylcholine specifically</i>, not to paralysis in general."]
         ])+
@@ -2179,18 +2230,25 @@ function renderDoseCalc(box){
   }
   var rows = [
     { nm:"Etomidate", sub:shock ? "0.15 mg/kg &mdash; halved" : "0.3 mg/kg",
-      val:fmtDose(wt*(shock?0.15:0.3))+" mg" },
+      val:fmtDose(wt*(shock?0.15:0.3))+" mg", linn:"not carried" },
     { nm:"Ketamine", sub:shock ? "0.5&ndash;1 mg/kg &mdash; reduced" : "1&ndash;2 mg/kg",
-      val:shock ? (fmtDose(wt*0.5)+"&ndash;"+fmtDose(wt*1)+" mg") : (fmtDose(wt*1)+"&ndash;"+fmtDose(wt*2)+" mg") },
+      val:shock ? (fmtDose(wt*0.5)+"&ndash;"+fmtDose(wt*1)+" mg") : (fmtDose(wt*1)+"&ndash;"+fmtDose(wt*2)+" mg"),
+      linn:"Linn MAI induction: 1&ndash;1.5 mg/kg = "+fmtDose(wt*1)+"&ndash;"+fmtDose(wt*1.5)+" mg" },
     { nm:"Propofol", sub:shock ? "avoid in shock" : "1.5&ndash;2.5 mg/kg",
-      val:shock ? "avoid" : (fmtDose(wt*1.5)+"&ndash;"+fmtDose(wt*2.5)+" mg"), warn:shock },
+      val:shock ? "avoid" : (fmtDose(wt*1.5)+"&ndash;"+fmtDose(wt*2.5)+" mg"), warn:shock, linn:"not carried" },
     { nm:"Succinylcholine", sub:"1.5 mg/kg &mdash; not reduced",
-      val:fmtDose(wt*1.5)+" mg" },
+      val:fmtDose(wt*1.5)+" mg", linn:"not carried" },
     { nm:"Rocuronium", sub:"1.2 mg/kg &mdash; not reduced",
-      val:fmtDose(wt*1.2)+" mg" }
+      val:fmtDose(wt*1.2)+" mg",
+      linn:"Linn MAI: 1 mg/kg = "+fmtDose(wt*1)+" mg (formulary 0.5&ndash;1 mg/kg)" },
+    { nm:"Vecuronium", sub:"Linn's primary NMBA &mdash; not taught in this course",
+      val:fmtDose(wt*0.1)+" mg", linn:"Linn MAI: 0.1 mg/kg slow over 30&ndash;60 sec", county:true }
   ];
   out.innerHTML = rows.map(function(r){
-    return "<div class='dc-r"+(r.warn?" shock":"")+"'><div class='dc-nm'>"+r.nm+"<small>"+r.sub+"</small></div>"+
+    var tag = r.linn ? "<span class='dc-linn"+(r.linn==="not carried"?" none":"")+"'>"+
+      (r.linn==="not carried" ? "Not carried by Linn County" : r.linn)+"</span>" : "";
+    return "<div class='dc-r"+(r.warn?" shock":"")+(r.county?" county":"")+"'><div class='dc-nm'>"+r.nm+
+           "<small>"+r.sub+"</small>"+tag+"</div>"+
            "<div class='dc-v'>"+r.val+"</div></div>";
   }).join("");
 }
@@ -2346,8 +2404,8 @@ function renderCertificate(){
       "<div class='c-cell'><div class='cl'>Date completed</div><div class='cv'>"+dstr+"</div></div>"+
       "<div class='c-cell'><div class='cl'>Certificate ID</div><div class='cv'>"+id+"</div></div>"+
     "</div>"+
-    "<div class='c-nocred'>Record of completion for internal training only. This is not accredited "+
-    "continuing education and does not count toward license or certification renewal.</div>";
+    "<div class='c-nocred'>Record of completion for internal training only. Not accredited for "+
+    "continuing education at this time; does not count toward license or certification renewal.</div>";
 }
 function hashStr(s){ var h=0; s=String(s); for(var i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))|0; } return h; }
 

@@ -1,5 +1,6 @@
 
 let currentTab='home',searchQuery='';
+var lastTrigger=null; // element to restore focus to when the detail overlay closes
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -49,16 +50,17 @@ function renderPatientBar(){
   var bar=document.getElementById('patientBar');
   if(!bar)return;
   var chip;
-  if(PT)chip='<button class="pt-chip set" id="ptChip">⚖ '+esc(PT.label)+'</button><button class="pt-clear" id="ptClear" aria-label="Clear patient">&times;</button>';
-  else chip='<button class="pt-chip" id="ptChip">⚖ Set Patient Weight</button>';
+  var exp=ptPanelOpen?'true':'false';
+  if(PT)chip='<button class="pt-chip set" id="ptChip" aria-expanded="'+exp+'" aria-controls="ptPanelForm">⚖ '+esc(PT.label)+'</button><button class="pt-clear" id="ptClear" aria-label="Clear patient weight">&times;</button>';
+  else chip='<button class="pt-chip" id="ptChip" aria-expanded="'+exp+'" aria-controls="ptPanelForm">⚖ Set Patient Weight</button>';
   var panel='';
   if(ptPanelOpen){
     var mode=(PT&&PT.mode)||'adult';
-    panel='<div class="pt-form">'+
-      '<div class="pt-mode-row"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds">Pediatric</button></div>'+
-      '<div class="weight-input-row"><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"'+(PT?' value="'+PT.kg+'"':'')+'><button class="weight-unit-btn active" id="ptKg">kg</button><button class="weight-unit-btn" id="ptLbs">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
+    panel='<div class="pt-form" id="ptPanelForm">'+
+      '<div class="pt-mode-row" role="group" aria-label="Patient type"><button class="pt-mode-btn'+(mode==='adult'?' active':'')+'" data-mode="adult" aria-pressed="'+(mode==='adult')+'">Adult</button><button class="pt-mode-btn'+(mode==='peds'?' active':'')+'" data-mode="peds" aria-pressed="'+(mode==='peds')+'">Pediatric</button></div>'+
+      '<div class="weight-input-row"><label class="sr-only" for="ptWeight">Patient weight</label><input type="number" id="ptWeight" inputmode="decimal" placeholder="Weight" min="1" max="660" step="0.1"'+(PT?' value="'+PT.kg+'"':'')+'><button class="weight-unit-btn active" id="ptKg" aria-pressed="true">kg</button><button class="weight-unit-btn" id="ptLbs" aria-pressed="false">lbs</button><button class="pt-set-btn" id="ptDone">Done</button></div>'+
       '<div class="pt-brose" id="ptBrose" style="display:'+(mode==='peds'?'block':'none')+'"><div class="pt-brose-label">Broselow color (fallback — measure with tape when available)</div><div class="pt-brose-row">'+
-        BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'"></button>';}).join('')+
+        BROSELOW.map(function(b,i){return'<button class="pt-color" data-bi="'+i+'" style="background:'+b.hex+'" title="'+b.c+' '+b.range+'" aria-label="Broselow '+b.c+', '+b.range+'"></button>';}).join('')+
       '</div></div>'+
       '<div class="pt-quick" id="ptQuick">'+quickCardInner()+'</div></div>';
   }
@@ -76,7 +78,7 @@ function wirePatientBar(){
   var userPickedMode=!!PT;
   function activeMode(){var b=document.querySelector('.pt-mode-btn.active');return b?b.dataset.mode:'adult';}
   function setModeUI(mode){
-    document.querySelectorAll('.pt-mode-btn').forEach(function(x){x.classList.toggle('active',x.dataset.mode===mode);});
+    document.querySelectorAll('.pt-mode-btn').forEach(function(x){var on=x.dataset.mode===mode;x.classList.toggle('active',on);x.setAttribute('aria-pressed',on?'true':'false');});
     var br=ge('ptBrose');if(br)br.style.display=mode==='peds'?'block':'none';
   }
   function updateChipLive(){
@@ -103,8 +105,9 @@ function wirePatientBar(){
   var doneBtn=ge('ptDone');
   if(doneBtn)doneBtn.onclick=function(){applyFromForm();ptPanelOpen=false;renderPatientBar();};
   var kgBtn=ge('ptKg'),lbsBtn=ge('ptLbs');
-  if(kgBtn)kgBtn.onclick=function(){kgBtn.classList.add('active');lbsBtn.classList.remove('active');applyFromForm();};
-  if(lbsBtn)lbsBtn.onclick=function(){lbsBtn.classList.add('active');kgBtn.classList.remove('active');applyFromForm();};
+  function setUnitUI(on,off){on.classList.add('active');on.setAttribute('aria-pressed','true');off.classList.remove('active');off.setAttribute('aria-pressed','false');}
+  if(kgBtn)kgBtn.onclick=function(){setUnitUI(kgBtn,lbsBtn);applyFromForm();};
+  if(lbsBtn)lbsBtn.onclick=function(){setUnitUI(lbsBtn,kgBtn);applyFromForm();};
   var wIn=ge('ptWeight');
   if(wIn){
     wIn.addEventListener('input',function(){
@@ -152,7 +155,7 @@ function renderProtocols(q,animate){
     const f=q?sec.items.filter(i=>i.title.toLowerCase().includes(q)||(i.body&&i.body.toLowerCase().includes(q))):sec.items;
     if(!f.length)return;shown+=f.length;
     html+='<div class="section-header"><span class="section-icon">'+sec.icon+'</span><span class="section-label">'+sec.section+'</span></div>';
-    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron">›</span></div></div>';});
+    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(item.title)+', scope '+esc(item.scope)+'" data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron" aria-hidden="true">›</span></div></div>';});
   });
   if(!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No protocols match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
@@ -162,7 +165,16 @@ function renderFormulary(q,animate){
   const c=document.getElementById('content');
   const f=q?FORMULARY.filter(d=>d.name.toLowerCase().includes(q)||d.cls.toLowerCase().includes(q)||(d.dose&&d.dose.toLowerCase().includes(q))):FORMULARY;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>').join('')+'</div>';
+  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>drugCardHtml(d,animate,i)).join('')+'</div>';
+}
+
+// Shared by the formulary tab and search results.
+function drugCardHtml(d,animate,i){
+  return'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>';
+}
+
+function scopeCellsHtml(row){
+  return'<div class="scope-cells"><span class="scope-cell sc-emt'+(row.emt?' on':'')+'">EMT</span><span class="scope-cell sc-aemt'+(row.aemt?' on':'')+'">AEMT</span><span class="scope-cell sc-pm'+(row.pm?' on':'')+'">PM</span></div>';
 }
 
 function renderScope(q){
@@ -173,7 +185,7 @@ function renderScope(q){
     const rows=q?SCOPE_DATA[cat.key].filter(r=>r.skill.toLowerCase().includes(q)):SCOPE_DATA[cat.key];
     if(!rows.length)return;shown+=rows.length;
     html+='<div class="section-header"><span class="section-label">'+(cat.label)+'</span></div>';
-    rows.forEach(row=>{html+='<div class="scope-row"><div class="scope-skill">'+(row.skill)+'</div><div class="scope-cells"><span class="scope-cell sc-emt'+(row.emt?' on':'')+'">EMT</span><span class="scope-cell sc-aemt'+(row.aemt?' on':'')+'">AEMT</span><span class="scope-cell sc-pm'+(row.pm?' on':'')+'">PM</span></div></div>';});
+    rows.forEach(row=>{html+='<div class="scope-row"><div class="scope-skill">'+(row.skill)+'</div>'+scopeCellsHtml(row)+'</div>';});
   });
   if(q&&!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No skills match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
@@ -183,7 +195,7 @@ function renderOps(q,animate){
   const c=document.getElementById('content');
   const f=q?OPS_DATA.filter(o=>o.title.toLowerCase().includes(q)||o.body.toLowerCase().includes(q)):OPS_DATA;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No guidelines match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML=f.map((item,i)=>'<div class="protocol-card '+cardCls(animate,i)+' data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron">›</span></div></div>').join('');
+  c.innerHTML=f.map((item,i)=>'<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(item.title)+'" data-type="ops" data-id="'+OPS_DATA.indexOf(item)+'"><div class="card-row"><div class="card-title">'+(item.title)+'</div><span class="chevron" aria-hidden="true">›</span></div></div>').join('');
 }
 
 function renderMAI(){
@@ -198,20 +210,200 @@ function renderMAI(){
 
 let maiUnit='kg';
 function setUnit(u){maiUnit=u;document.getElementById('btnKg').classList.toggle('active',u==='kg');document.getElementById('btnLbs').classList.toggle('active',u==='lbs');calcMAIDoses();}
-function calcMAIDoses(){
-  const raw=parseFloat(document.getElementById('maiWeight').value);
-  const el=document.getElementById('calcResults');
-  if(!raw||isNaN(raw)||raw<=0){el.innerHTML='<div class="calc-placeholder">Enter patient weight above</div>';return;}
-  const kg=Math.min(maiUnit==='lbs'?raw*.4536:raw,300);
-  const drugs=[
+// Pure dose math, kept separate from rendering so it can be tested
+// directly (test/doses.test.js). Weight is capped at 300 kg here, the
+// same ceiling the patient-weight panel applies.
+function maiDoses(kg){
+  kg=Math.min(kg,300);
+  return [
     {name:'Ketamine (Induction)',detail:'1–1.5 mg/kg IV over 1 min',lo:kg*1,hi:kg*1.5,unit:'mg',note:'Administer over 60 sec. Wait 60 sec for effect.'},
     {name:'Vecuronium (Paralytic)',detail:'0.1 mg/kg IV over 30–60 sec',lo:kg*.1,hi:null,unit:'mg',note:'Onset 60–90 sec. Duration 30–60 min.'},
     {name:'Rocuronium (Paralytic — alt)',detail:'1 mg/kg IV',lo:kg*1,hi:null,unit:'mg',note:'Onset ~45–60 sec. Extended formulary.'},
     {name:'Midazolam (Post-intubation sedation)',detail:'2.5–5 mg IV every 10–30 min',lo:2.5,hi:5,unit:'mg',note:'Fixed dose — not weight-based.'},
     {name:'Lidocaine (IO site analgesia)',detail:'40 mg IO slow push → 10 mL NS → 20 mg IO',lo:40,hi:null,unit:'mg',note:'Fixed adult dose. Peds: 0.5 mg/kg (max 40 mg).'}
   ];
+}
+
+function calcMAIDoses(){
+  const raw=parseFloat(document.getElementById('maiWeight').value);
+  const el=document.getElementById('calcResults');
+  if(!raw||isNaN(raw)||raw<=0){el.innerHTML='<div class="calc-placeholder">Enter patient weight above</div>';return;}
+  const kg=Math.min(maiUnit==='lbs'?raw*.4536:raw,300);
+  const drugs=maiDoses(kg);
   el.innerHTML='<div style="font-family:var(--f-mono);font-size:11px;color:var(--steel);margin-bottom:6px">Patient weight: '+(kg.toFixed(1))+' kg'+(maiUnit==='lbs'?' ('+raw+' lbs)':'')+'</div>'+
   drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">'+(d.hi?(d.lo.toFixed(1)+'–'+d.hi.toFixed(1)):d.lo.toFixed(1))+' <span>'+(d.unit)+'</span></div>'+'<div style="font-size:11px;color:var(--steel);margin-top:3px">'+(d.note)+'</div></div>').join('');
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+// One index across protocols, medications, scope and ops, so a search
+// finds the right thing regardless of which tab you happen to be on.
+// Protocol bodies are HTML, so they are stripped once at build time —
+// otherwise "div", "class" and "span" match nearly every protocol.
+function stripHtml(s){
+  return String(s||'')
+    .replace(/<[^>]*>/g,' ')          // tags
+    .replace(/&[a-z]+;|&#\d+;/gi,' ') // entities
+    .replace(/\s+/g,' ')
+    .toLowerCase();
+}
+
+// What a medic might type, mapped to what the content actually says.
+// Brand names are for drugs on the 2026 formulary; abbreviations are
+// ones in common radio and chart use. Kept conservative on purpose —
+// a wrong alias sends someone to the wrong protocol.
+var SEARCH_ALIASES={
+  narcan:'naloxone', versed:'midazolam', zofran:'ondansetron',
+  benadryl:'diphenhydramine', solumedrol:'methylprednisolone',
+  'solu-medrol':'methylprednisolone', levophed:'norepinephrine',
+  cordarone:'amiodarone', pacerone:'amiodarone', adenocard:'adenosine',
+  ketalar:'ketamine', zemuron:'rocuronium', norcuron:'vecuronium',
+  sublimaze:'fentanyl', toradol:'ketorolac', dilaudid:'hydromorphone',
+  tylenol:'acetaminophen', apap:'acetaminophen', asa:'aspirin',
+  atrovent:'ipratropium', proventil:'albuterol', ventolin:'albuterol',
+  bicarb:'sodium bicarbonate', ntg:'nitroglycerin', nitro:'nitroglycerin',
+  mag:'magnesium', ns:'normal saline', d10:'dextrose', epi:'epinephrine',
+  // Linn calls it MAI; the wider world calls it RSI
+  rsi:'medication-assisted intubation', dai:'medication-assisted intubation',
+  // Presentations
+  mi:'acs', stemi:'acs', 'heart attack':'acs', cva:'stroke',
+  sob:'respiratory', 'shortness of breath':'respiratory',
+  od:'overdose', dka:'hyperglycemia', 'v-fib':'vf', 'v fib':'vf',
+  'v-tach':'vt', 'v tach':'vt', chf:'pulmonary edema',
+  tbi:'head', 'c-spine':'spinal', cspine:'spinal',
+  opiate:'opioid', narcotic:'opioid', 'low sugar':'hypoglycemia',
+  seizing:'seizure', 'allergic reaction':'anaphylaxis'
+};
+
+var SEARCH_INDEX=null;
+function buildSearchIndex(){
+  var idx=[];
+  SECTIONS.protocols.forEach(function(sec){
+    sec.items.forEach(function(item){
+      idx.push({kind:'protocol',id:item.id,title:item.title,
+        meta:sec.section+' · Scope: '+item.scope,
+        keys:(item.scope||'').toLowerCase()+' '+sec.section.toLowerCase(),
+        text:stripHtml(item.body),ref:item});
+    });
+  });
+  FORMULARY.forEach(function(d){
+    idx.push({kind:'drug',id:d.name,title:d.name,meta:d.cls,
+      keys:(d.cls+' '+d.scope).toLowerCase(),
+      text:stripHtml(d.dose+' '+(d.ci||'')+' '+(d.warn||'')),ref:d});
+  });
+  OPS_DATA.forEach(function(o,i){
+    idx.push({kind:'ops',id:i,title:o.title,meta:'Operational Guidelines',
+      keys:'ops operations',text:stripHtml(o.body),ref:o});
+  });
+  Object.keys(SCOPE_DATA).forEach(function(cat){
+    SCOPE_DATA[cat].forEach(function(r){
+      idx.push({kind:'scope',id:r.skill,title:r.skill,meta:'Scope of practice',
+        keys:cat.toLowerCase(),text:'',ref:r});
+    });
+  });
+  // The MAI procedure page is a destination too, not just a protocol
+  idx.push({kind:'page',id:'mai',title:'MAI — Medication-Assisted Intubation',
+    meta:'Procedure &amp; dose calculator',
+    keys:'mai rsi intubation paralytic induction ketamine vecuronium rocuronium airway',
+    text:'medication assisted intubation rapid sequence induction paralytic'});
+  SEARCH_INDEX=idx;
+  return idx;
+}
+
+// Expand a query token through the alias table, so "narcan" also looks
+// for "naloxone".
+function expandToken(t){
+  var out=[t];
+  if(SEARCH_ALIASES[t])out.push(SEARCH_ALIASES[t]);
+  return out;
+}
+
+// Every token must match somewhere (AND). Title matches outrank body
+// matches so "ketamine" leads with the drug, not a protocol that
+// happens to mention it.
+function reWordStart(t){
+  return new RegExp('\\b'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+}
+function scoreEntry(e,tokens){
+  var total=0;
+  for(var i=0;i<tokens.length;i++){
+    var variants=expandToken(tokens[i]),best=0;
+    for(var v=0;v<variants.length;v++){
+      var t=variants[v],title=e.title.toLowerCase(),s=0;
+      // Body and keyword matches must start at a word boundary, or
+      // "versed" matches "reversed" and "epi" matches "biphasic".
+      var w=reWordStart(t);
+      if(title===t)s=120;
+      else if(title.indexOf(t)===0)s=80;
+      else if(w.test(title))s=60;
+      else if(title.indexOf(t)!==-1)s=40;
+      else if(w.test(e.keys))s=18;
+      else if(w.test(e.text))s=8;
+      if(s>best)best=s;
+    }
+    if(!best)return 0;   // this token matched nothing — drop the entry
+    total+=best;
+  }
+  if(e.kind==='drug')total+=4;   // nudge medications up on drug-name searches
+  return total;
+}
+
+function searchAll(q){
+  if(!SEARCH_INDEX)buildSearchIndex();
+  var tokens=q.toLowerCase().split(/\s+/).filter(Boolean);
+  if(!tokens.length)return[];
+  // Also try the whole phrase as one token, for aliases like "heart attack"
+  var phrase=q.toLowerCase().trim();
+  var results=[];
+  SEARCH_INDEX.forEach(function(e){
+    var s=scoreEntry(e,tokens);
+    if(SEARCH_ALIASES[phrase])s=Math.max(s,scoreEntry(e,[phrase]));
+    if(s>0)results.push({e:e,s:s});
+  });
+  results.sort(function(a,b){return b.s-a.s||a.e.title.localeCompare(b.e.title);});
+  return results;
+}
+
+var SEARCH_GROUPS=[
+  ['protocol','📋','Protocols'],
+  ['drug','💊','Medications'],
+  ['page','💉','Procedures'],
+  ['ops','🚑','Operations'],
+  ['scope','🎖','Scope of Practice']
+];
+
+function renderSearch(q,animate){
+  var c=document.getElementById('content');
+  var results=searchAll(q);
+  if(!results.length){
+    c.innerHTML='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">Nothing matches &ldquo;'+esc(q)+'&rdquo;</div></div>';
+    return 0;
+  }
+  var by={};
+  results.forEach(function(r){(by[r.e.kind]=by[r.e.kind]||[]).push(r.e);});
+  var html='',n=0;
+  SEARCH_GROUPS.forEach(function(g){
+    var kind=g[0],list=by[kind];
+    if(!list||!list.length)return;
+    html+='<div class="section-header"><span class="section-icon">'+g[1]+'</span>'+
+          '<span class="section-label">'+g[2]+'</span>'+
+          '<span class="sec-count">'+list.length+'</span></div>';
+    list.forEach(function(e,i){
+      n++;
+      if(kind==='drug'){
+        html+=drugCardHtml(e.ref,animate,i);
+      }else if(kind==='scope'){
+        html+='<div class="scope-row"><div class="scope-skill">'+e.title+'</div>'+scopeCellsHtml(e.ref)+'</div>';
+      }else if(kind==='page'){
+        html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(e.title)+'" data-goto="mai"><div class="card-row"><div class="card-title">'+e.title+'</div><span class="chevron" aria-hidden="true">›</span></div></div>';
+      }else{
+        html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(e.title)+'" data-type="'+kind+'" data-id="'+e.id+'"><div class="card-row"><div class="card-title">'+e.title+'</div>'+
+          (kind==='protocol'?'<span class="scope-pill '+getScopeClass(e.ref.scope)+'">'+e.ref.scope+'</span>':'')+
+          '<span class="chevron" aria-hidden="true">›</span></div></div>';
+      }
+    });
+  });
+  c.innerHTML=html;
+  return n;
 }
 
 // ── HOME ─────────────────────────────────────────────────────
@@ -265,8 +457,8 @@ function renderHome(){
   h+='</div>';
 
   h+='<div class="home-sec edu"><span class="home-sec-label">Training &amp; Study</span></div>';
-  h+='<div class="edu-disclaimer"><span>&#9432;</span><span>Study material &mdash; <b>not</b> Linn County standing orders, and <b>not</b> accredited CE. Nothing here counts toward license or certification renewal. Field practice follows the protocols and formulary above.</span></div>';
-  h+='<div class="edu-grid" style="margin-top:10px">';
+  h+='<div class="edu-disclaimer">Study material &mdash; not standing orders, and not CE credit at this time.</div>';
+  h+='<div class="edu-grid" style="margin-top:9px">';
   var ap=academyProgress();
   var apLine=ap?(ap.certified?'Certificate earned &middot; 8 of 8 modules':(ap.done?ap.done+' of 8 modules passed':'Not started &middot; 8 modules')):'Not started &middot; 8 modules';
   h+='<a class="edu-tile" href="airway-academy.html">'+
@@ -283,8 +475,18 @@ function renderHome(){
   document.getElementById('content').innerHTML=h;
 }
 
+// Report how many results a search produced. Counted off the rendered
+// DOM so it can't drift from what is on screen.
+function announceResults(){
+  if(!searchQuery){announce(TAB_LABELS[currentTab]||'');return;}
+  var c=document.getElementById('content');
+  var n=c?c.querySelectorAll('.protocol-card,.drug-card,.scope-row').length:0;
+  announce(n+(n===1?' result':' results')+' for '+searchQuery);
+}
+
 function render(animate){
   const q=searchQuery.trim().toLowerCase();
+  if(q){renderSearch(q,animate);return;}
   if(currentTab==='home')renderHome();
   else if(currentTab==='protocols')renderProtocols(q,animate);
   else if(currentTab==='formulary')renderFormulary(q,animate);
@@ -309,6 +511,10 @@ function showDetail(type,id){
   }
   dv.style.display='block';
   dv.scrollTop=0;
+  // Send focus into the overlay and remember where to put it back
+  lastTrigger=document.activeElement;
+  var bb=document.getElementById('backBtn');
+  if(bb)bb.focus();
   // Push a history entry so the phone/browser back button closes the
   // overlay instead of leaving the app.
   if(!(history.state&&history.state.detail))history.pushState({detail:true},'');
@@ -316,6 +522,9 @@ function showDetail(type,id){
 function hideDetail(){
   var dv=document.getElementById('detail-view');
   if(dv){dv.style.display='none';}
+  // Return focus to whatever opened the overlay, so keyboard and screen
+  // reader users don't get dumped at the top of the document.
+  if(lastTrigger&&lastTrigger.focus){lastTrigger.focus();lastTrigger=null;}
 }
 function closeDetail(){
   var dv=document.getElementById('detail-view');
@@ -339,31 +548,74 @@ document.querySelectorAll('.nav-tab').forEach(function(tab){
 document.getElementById('searchInput').addEventListener('input',function(e){
   searchQuery=e.target.value;
   document.getElementById('clearBtn').style.display=searchQuery?'block':'none';
-  // Home has nothing to filter — searching from it means "find a protocol"
-  if(currentTab==='home'&&searchQuery){goTab('protocols');return;}
-  if(currentTab==='mai')return; // MAI is a fixed procedure page — re-rendering would wipe the calculator
+  // A search overrides whatever tab is showing, and clearing it has to
+  // restore that tab — including MAI, whose calculator is rebuilt.
   render();
+  announceResults();
 });
 document.getElementById('clearBtn').addEventListener('click',function(){
   document.getElementById('searchInput').value='';
   searchQuery='';
   document.getElementById('clearBtn').style.display='none';
-  if(currentTab==='mai')return;
   render();
+  announce(TAB_LABELS[currentTab]||'');
 });
-// Switch to a tab programmatically, keeping the nav highlight in sync.
+// ── ACCESSIBILITY ────────────────────────────────────────────
+// Short status messages for screen readers. Tab and search changes
+// rewrite #content silently, so without this a non-sighted user gets
+// no feedback that anything happened.
+function announce(msg){
+  var el=document.getElementById('a11yStatus');
+  if(el)el.textContent=msg;
+}
+
+var TAB_LABELS={home:'Home',protocols:'Protocols',formulary:'Formulary',scope:'Scope of practice',ops:'Operational guidelines',mai:'Medication-assisted intubation'};
+
+// Switch to a tab programmatically, keeping the nav highlight, the ARIA
+// state and the roving tabindex in sync.
 function goTab(name){
   currentTab=name;
   document.querySelectorAll('.nav-tab').forEach(function(t){
     var on=t.dataset.tab===name;
     t.classList.toggle('active',on);
+    if(t.hasAttribute('role')){
+      t.setAttribute('aria-selected',on?'true':'false');
+      t.tabIndex=on?0:-1;
+    }
     // The tab bar scrolls on narrow phones — keep the active tab visible
     if(on&&t.scrollIntoView)t.scrollIntoView({block:'nearest',inline:'nearest'});
   });
   window.scrollTo(0,0);
   render(true);
+  announce(TAB_LABELS[name]||name);
 }
 
+// Arrow-key navigation across the tab bar, as a tablist is expected to
+// support. Enter/Space still activate via the normal click handler.
+function wireTabKeys(){
+  var tabs=Array.prototype.slice.call(document.querySelectorAll('.nav-tab[role="tab"]'));
+  tabs.forEach(function(tab,i){
+    tab.addEventListener('keydown',function(e){
+      var next=null;
+      if(e.key==='ArrowRight')next=tabs[(i+1)%tabs.length];
+      else if(e.key==='ArrowLeft')next=tabs[(i-1+tabs.length)%tabs.length];
+      else if(e.key==='Home')next=tabs[0];
+      else if(e.key==='End')next=tabs[tabs.length-1];
+      else return;
+      e.preventDefault();
+      next.focus();
+      if(next.dataset.tab){closeDetail();goTab(next.dataset.tab);}
+    });
+  });
+}
+
+document.getElementById('content').addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  var t=e.target.closest('[data-type],[data-goto]');
+  if(!t)return;
+  e.preventDefault();
+  t.click();
+});
 document.getElementById('content').addEventListener('click',function(e){
   var tile=e.target.closest('[data-goto]');
   if(tile){
@@ -384,4 +636,5 @@ document.getElementById('content').addEventListener('click',function(e){
 });
 document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
 renderPatientBar();
+wireTabKeys();
 render(true);
