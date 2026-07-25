@@ -60,7 +60,8 @@ function makeSandbox() {
 // from outside — this final script copies them out by name.
 const EXPORTS = [
   'fmt', 'pk', 'pkr', 'PT_CALC', 'BROSELOW', 'SECTIONS', 'OPS_DATA',
-  'maiDoses', 'getScopeClass',
+  'maiDoses', 'getScopeClass', 'FORMULARY', 'SCOPE_DATA',
+  'searchAll', 'stripHtml', 'SEARCH_ALIASES',
 ];
 
 // Evaluate data.js and app.js in one shared context, the way the browser

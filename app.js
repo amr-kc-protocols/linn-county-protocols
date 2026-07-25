@@ -165,7 +165,16 @@ function renderFormulary(q,animate){
   const c=document.getElementById('content');
   const f=q?FORMULARY.filter(d=>d.name.toLowerCase().includes(q)||d.cls.toLowerCase().includes(q)||(d.dose&&d.dose.toLowerCase().includes(q))):FORMULARY;
   if(!f.length){c.innerHTML='<div class="empty-state"><div class="es-icon">💊</div><div class="es-text">No drugs match "'+esc(q)+'"</div></div>';return;}
-  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>').join('')+'</div>';
+  c.innerHTML='<div style="padding:10px 14px">'+f.map((d,i)=>drugCardHtml(d,animate,i)).join('')+'</div>';
+}
+
+// Shared by the formulary tab and search results.
+function drugCardHtml(d,animate,i){
+  return'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>';
+}
+
+function scopeCellsHtml(row){
+  return'<div class="scope-cells"><span class="scope-cell sc-emt'+(row.emt?' on':'')+'">EMT</span><span class="scope-cell sc-aemt'+(row.aemt?' on':'')+'">AEMT</span><span class="scope-cell sc-pm'+(row.pm?' on':'')+'">PM</span></div>';
 }
 
 function renderScope(q){
@@ -176,7 +185,7 @@ function renderScope(q){
     const rows=q?SCOPE_DATA[cat.key].filter(r=>r.skill.toLowerCase().includes(q)):SCOPE_DATA[cat.key];
     if(!rows.length)return;shown+=rows.length;
     html+='<div class="section-header"><span class="section-label">'+(cat.label)+'</span></div>';
-    rows.forEach(row=>{html+='<div class="scope-row"><div class="scope-skill">'+(row.skill)+'</div><div class="scope-cells"><span class="scope-cell sc-emt'+(row.emt?' on':'')+'">EMT</span><span class="scope-cell sc-aemt'+(row.aemt?' on':'')+'">AEMT</span><span class="scope-cell sc-pm'+(row.pm?' on':'')+'">PM</span></div></div>';});
+    rows.forEach(row=>{html+='<div class="scope-row"><div class="scope-skill">'+(row.skill)+'</div>'+scopeCellsHtml(row)+'</div>';});
   });
   if(q&&!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No skills match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
@@ -223,6 +232,178 @@ function calcMAIDoses(){
   const drugs=maiDoses(kg);
   el.innerHTML='<div style="font-family:var(--f-mono);font-size:11px;color:var(--steel);margin-bottom:6px">Patient weight: '+(kg.toFixed(1))+' kg'+(maiUnit==='lbs'?' ('+raw+' lbs)':'')+'</div>'+
   drugs.map(d=>'<div class="calc-drug-row"><div class="calc-drug-name">'+(d.name)+'</div><div class="calc-drug-detail">'+(d.detail)+'</div><div class="calc-drug-dose">'+(d.hi?(d.lo.toFixed(1)+'–'+d.hi.toFixed(1)):d.lo.toFixed(1))+' <span>'+(d.unit)+'</span></div>'+'<div style="font-size:11px;color:var(--steel);margin-top:3px">'+(d.note)+'</div></div>').join('');
+}
+
+// ── SEARCH ───────────────────────────────────────────────────
+// One index across protocols, medications, scope and ops, so a search
+// finds the right thing regardless of which tab you happen to be on.
+// Protocol bodies are HTML, so they are stripped once at build time —
+// otherwise "div", "class" and "span" match nearly every protocol.
+function stripHtml(s){
+  return String(s||'')
+    .replace(/<[^>]*>/g,' ')          // tags
+    .replace(/&[a-z]+;|&#\d+;/gi,' ') // entities
+    .replace(/\s+/g,' ')
+    .toLowerCase();
+}
+
+// What a medic might type, mapped to what the content actually says.
+// Brand names are for drugs on the 2026 formulary; abbreviations are
+// ones in common radio and chart use. Kept conservative on purpose —
+// a wrong alias sends someone to the wrong protocol.
+var SEARCH_ALIASES={
+  narcan:'naloxone', versed:'midazolam', zofran:'ondansetron',
+  benadryl:'diphenhydramine', solumedrol:'methylprednisolone',
+  'solu-medrol':'methylprednisolone', levophed:'norepinephrine',
+  cordarone:'amiodarone', pacerone:'amiodarone', adenocard:'adenosine',
+  ketalar:'ketamine', zemuron:'rocuronium', norcuron:'vecuronium',
+  sublimaze:'fentanyl', toradol:'ketorolac', dilaudid:'hydromorphone',
+  tylenol:'acetaminophen', apap:'acetaminophen', asa:'aspirin',
+  atrovent:'ipratropium', proventil:'albuterol', ventolin:'albuterol',
+  bicarb:'sodium bicarbonate', ntg:'nitroglycerin', nitro:'nitroglycerin',
+  mag:'magnesium', ns:'normal saline', d10:'dextrose', epi:'epinephrine',
+  // Linn calls it MAI; the wider world calls it RSI
+  rsi:'medication-assisted intubation', dai:'medication-assisted intubation',
+  // Presentations
+  mi:'acs', stemi:'acs', 'heart attack':'acs', cva:'stroke',
+  sob:'respiratory', 'shortness of breath':'respiratory',
+  od:'overdose', dka:'hyperglycemia', 'v-fib':'vf', 'v fib':'vf',
+  'v-tach':'vt', 'v tach':'vt', chf:'pulmonary edema',
+  tbi:'head', 'c-spine':'spinal', cspine:'spinal',
+  opiate:'opioid', narcotic:'opioid', 'low sugar':'hypoglycemia',
+  seizing:'seizure', 'allergic reaction':'anaphylaxis'
+};
+
+var SEARCH_INDEX=null;
+function buildSearchIndex(){
+  var idx=[];
+  SECTIONS.protocols.forEach(function(sec){
+    sec.items.forEach(function(item){
+      idx.push({kind:'protocol',id:item.id,title:item.title,
+        meta:sec.section+' · Scope: '+item.scope,
+        keys:(item.scope||'').toLowerCase()+' '+sec.section.toLowerCase(),
+        text:stripHtml(item.body),ref:item});
+    });
+  });
+  FORMULARY.forEach(function(d){
+    idx.push({kind:'drug',id:d.name,title:d.name,meta:d.cls,
+      keys:(d.cls+' '+d.scope).toLowerCase(),
+      text:stripHtml(d.dose+' '+(d.ci||'')+' '+(d.warn||'')),ref:d});
+  });
+  OPS_DATA.forEach(function(o,i){
+    idx.push({kind:'ops',id:i,title:o.title,meta:'Operational Guidelines',
+      keys:'ops operations',text:stripHtml(o.body),ref:o});
+  });
+  Object.keys(SCOPE_DATA).forEach(function(cat){
+    SCOPE_DATA[cat].forEach(function(r){
+      idx.push({kind:'scope',id:r.skill,title:r.skill,meta:'Scope of practice',
+        keys:cat.toLowerCase(),text:'',ref:r});
+    });
+  });
+  // The MAI procedure page is a destination too, not just a protocol
+  idx.push({kind:'page',id:'mai',title:'MAI — Medication-Assisted Intubation',
+    meta:'Procedure &amp; dose calculator',
+    keys:'mai rsi intubation paralytic induction ketamine vecuronium rocuronium airway',
+    text:'medication assisted intubation rapid sequence induction paralytic'});
+  SEARCH_INDEX=idx;
+  return idx;
+}
+
+// Expand a query token through the alias table, so "narcan" also looks
+// for "naloxone".
+function expandToken(t){
+  var out=[t];
+  if(SEARCH_ALIASES[t])out.push(SEARCH_ALIASES[t]);
+  return out;
+}
+
+// Every token must match somewhere (AND). Title matches outrank body
+// matches so "ketamine" leads with the drug, not a protocol that
+// happens to mention it.
+function reWordStart(t){
+  return new RegExp('\\b'+t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));
+}
+function scoreEntry(e,tokens){
+  var total=0;
+  for(var i=0;i<tokens.length;i++){
+    var variants=expandToken(tokens[i]),best=0;
+    for(var v=0;v<variants.length;v++){
+      var t=variants[v],title=e.title.toLowerCase(),s=0;
+      // Body and keyword matches must start at a word boundary, or
+      // "versed" matches "reversed" and "epi" matches "biphasic".
+      var w=reWordStart(t);
+      if(title===t)s=120;
+      else if(title.indexOf(t)===0)s=80;
+      else if(w.test(title))s=60;
+      else if(title.indexOf(t)!==-1)s=40;
+      else if(w.test(e.keys))s=18;
+      else if(w.test(e.text))s=8;
+      if(s>best)best=s;
+    }
+    if(!best)return 0;   // this token matched nothing — drop the entry
+    total+=best;
+  }
+  if(e.kind==='drug')total+=4;   // nudge medications up on drug-name searches
+  return total;
+}
+
+function searchAll(q){
+  if(!SEARCH_INDEX)buildSearchIndex();
+  var tokens=q.toLowerCase().split(/\s+/).filter(Boolean);
+  if(!tokens.length)return[];
+  // Also try the whole phrase as one token, for aliases like "heart attack"
+  var phrase=q.toLowerCase().trim();
+  var results=[];
+  SEARCH_INDEX.forEach(function(e){
+    var s=scoreEntry(e,tokens);
+    if(SEARCH_ALIASES[phrase])s=Math.max(s,scoreEntry(e,[phrase]));
+    if(s>0)results.push({e:e,s:s});
+  });
+  results.sort(function(a,b){return b.s-a.s||a.e.title.localeCompare(b.e.title);});
+  return results;
+}
+
+var SEARCH_GROUPS=[
+  ['protocol','📋','Protocols'],
+  ['drug','💊','Medications'],
+  ['page','💉','Procedures'],
+  ['ops','🚑','Operations'],
+  ['scope','🎖','Scope of Practice']
+];
+
+function renderSearch(q,animate){
+  var c=document.getElementById('content');
+  var results=searchAll(q);
+  if(!results.length){
+    c.innerHTML='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">Nothing matches &ldquo;'+esc(q)+'&rdquo;</div></div>';
+    return 0;
+  }
+  var by={};
+  results.forEach(function(r){(by[r.e.kind]=by[r.e.kind]||[]).push(r.e);});
+  var html='',n=0;
+  SEARCH_GROUPS.forEach(function(g){
+    var kind=g[0],list=by[kind];
+    if(!list||!list.length)return;
+    html+='<div class="section-header"><span class="section-icon">'+g[1]+'</span>'+
+          '<span class="section-label">'+g[2]+'</span>'+
+          '<span class="sec-count">'+list.length+'</span></div>';
+    list.forEach(function(e,i){
+      n++;
+      if(kind==='drug'){
+        html+=drugCardHtml(e.ref,animate,i);
+      }else if(kind==='scope'){
+        html+='<div class="scope-row"><div class="scope-skill">'+e.title+'</div>'+scopeCellsHtml(e.ref)+'</div>';
+      }else if(kind==='page'){
+        html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(e.title)+'" data-goto="mai"><div class="card-row"><div class="card-title">'+e.title+'</div><span class="chevron" aria-hidden="true">›</span></div></div>';
+      }else{
+        html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(e.title)+'" data-type="'+kind+'" data-id="'+e.id+'"><div class="card-row"><div class="card-title">'+e.title+'</div>'+
+          (kind==='protocol'?'<span class="scope-pill '+getScopeClass(e.ref.scope)+'">'+e.ref.scope+'</span>':'')+
+          '<span class="chevron" aria-hidden="true">›</span></div></div>';
+      }
+    });
+  });
+  c.innerHTML=html;
+  return n;
 }
 
 // ── HOME ─────────────────────────────────────────────────────
@@ -305,6 +486,7 @@ function announceResults(){
 
 function render(animate){
   const q=searchQuery.trim().toLowerCase();
+  if(q){renderSearch(q,animate);return;}
   if(currentTab==='home')renderHome();
   else if(currentTab==='protocols')renderProtocols(q,animate);
   else if(currentTab==='formulary')renderFormulary(q,animate);
@@ -366,9 +548,8 @@ document.querySelectorAll('.nav-tab').forEach(function(tab){
 document.getElementById('searchInput').addEventListener('input',function(e){
   searchQuery=e.target.value;
   document.getElementById('clearBtn').style.display=searchQuery?'block':'none';
-  // Home has nothing to filter — searching from it means "find a protocol"
-  if(currentTab==='home'&&searchQuery){goTab('protocols');return;}
-  if(currentTab==='mai')return; // MAI is a fixed procedure page — re-rendering would wipe the calculator
+  // A search overrides whatever tab is showing, and clearing it has to
+  // restore that tab — including MAI, whose calculator is rebuilt.
   render();
   announceResults();
 });
@@ -376,8 +557,8 @@ document.getElementById('clearBtn').addEventListener('click',function(){
   document.getElementById('searchInput').value='';
   searchQuery='';
   document.getElementById('clearBtn').style.display='none';
-  if(currentTab==='mai')return;
   render();
+  announce(TAB_LABELS[currentTab]||'');
 });
 // ── ACCESSIBILITY ────────────────────────────────────────────
 // Short status messages for screen readers. Tab and search changes

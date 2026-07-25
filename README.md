@@ -16,6 +16,13 @@ Landing screen with a tile grid, modelled on the AMR KC field guide. It splits i
 
 The patient-weight tile sits at the top since it drives every computed dose in the app, and reflects the current patient once set. The 2026 PDF and the Quiz also live as icon buttons in the header, keeping the tab bar for app sections only.
 
+### Search
+One search across protocols, medications, scope and operations — results are grouped by type and ranked, so a drug name leads with the drug rather than a protocol that happens to mention it. It searches from any tab; clearing it returns you to that tab.
+
+Protocol bodies are HTML, so they are stripped before indexing — searching `div` or `span` used to return nearly every protocol. Matches in body text must start at a word boundary, so "versed" no longer matches "reversed".
+
+An alias table maps what a medic types to what the content says: brand names for drugs on the formulary (`narcan` → Naloxone, `versed` → Midazolam, `zemuron` → Rocuronium), common shorthand (`cva` → Stroke, `heart attack` → ACS), and `rsi` → the MAI protocol, since that is what Linn calls it. Aliases are covered by tests, including one asserting every alias target actually exists in the content — a typo would otherwise send a search silently nowhere.
+
 ### Protocols
 Searchable protocol library organized by clinical category:
 - Universal Guidelines (vascular access, medication administration)
@@ -132,6 +139,8 @@ No dependencies — the suite uses `node:test` and `node:assert` only, and runs 
 - stops at its ceiling where one is declared.
 
 Plus Broselow tape ordering, and that every protocol has the fields the UI renders with unique ids.
+
+`test/search.test.js` covers the search index: markup never matches, every formulary drug is findable by name, brand aliases resolve to the right generic, word order doesn't matter, and the query is AND rather than OR.
 
 **If you change a dose, run the tests.** If one fails, assume the dose is wrong before assuming the test is.
 
