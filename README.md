@@ -51,6 +51,25 @@ Progress is stored locally in the browser (`localStorage`, key `airway_academy_v
 - The printable completion certificate carries the same wording, since a certificate is the most likely thing to be mistaken for CE documentation.
 - Training uses amber throughout; protocol and reference material uses crimson.
 
+**Formulary reconciliation.** The course teaches critical care transport RSI; Linn County's MAI protocol is narrower, so the two do not agree on every agent. Rather than rewriting the clinical teaching — the reasoning behind choosing between agents is the point of the course, and those drugs turn up on interfacility transfers — the differences are stated wherever a dose appears:
+
+| Agent | Course teaches | Linn County 2026 |
+|---|---|---|
+| Ketamine | 1–2 mg/kg | MAI induction **1–1.5 mg/kg**, PM |
+| Rocuronium | **1.2 mg/kg**, and calls 0.6 mg/kg the common error | MAI **1 mg/kg** (formulary 0.5–1), extended formulary, PM |
+| Vecuronium | not covered | **Linn's primary NMBA** — 0.1 mg/kg, PM |
+| Succinylcholine / Etomidate / Propofol | taught in full | **not carried** |
+| Midazolam | post-intubation sedation | MAI maintenance 2.5–5 mg |
+| Sugammadex | 16 mg/kg reversal | not available prehospital |
+
+Three places carry this:
+
+1. A **crosswalk panel** under the training notice, before any lesson content.
+2. The **RSI dose calculator**, which now prints the Linn dose beside its own for every agent, marks the three Linn does not carry, and adds a vecuronium row the course otherwise omits.
+3. **Inline notes** at the three points where the course actively teaches rocuronium 1.2 mg/kg — the highest-risk conflict, since it is 20% above the Linn maximum and the course explicitly calls the lower dose a mistake.
+
+Rocuronium is the one to watch on any future content update.
+
 ### Quiz
 Separate credential-level quiz app with instant feedback:
 - **EMT** — 40 questions
