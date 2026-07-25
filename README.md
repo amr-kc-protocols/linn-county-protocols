@@ -8,6 +8,14 @@ Mobile-optimized prehospital medical protocol reference for AMR Linn County, Kan
 
 ## What's in the App
 
+### Home
+Landing screen with a tile grid, modelled on the AMR KC field guide. It splits into two clearly separated groups:
+
+- **Protocols &amp; Reference** — Protocols, Formulary, Scope, Ops, MAI, and the signed PDF. Crimson accents.
+- **Training &amp; Study** — the Airway &amp; RSI Academy and the Protocol Quiz. Amber accents, `Training` / `Self-test` badges, and an explicit banner stating this is study material, **not** a standing order and **not** accredited CE.
+
+The patient-weight tile sits at the top since it drives every computed dose in the app, and reflects the current patient once set. The 2026 PDF and the Quiz also live as icon buttons in the header, keeping the tab bar for app sections only.
+
 ### Protocols
 Searchable protocol library organized by clinical category:
 - Universal Guidelines (vascular access, medication administration)
@@ -30,12 +38,18 @@ Visual EMT / AEMT / Paramedic scope comparison across airway, circulation, vascu
 ### MAI (Medication-Assisted Intubation)
 Step-by-step procedure guide with an integrated **weight-based dose calculator** (kg/lbs) for ketamine, vecuronium, rocuronium, midazolam, and lidocaine IO analgesia.
 
-### Airway &amp; RSI Academy
+### Airway &amp; RSI Academy (training)
 Interactive 8-module course on emergency airway management and rapid sequence intubation — the decision to intubate, anatomic and physiologic difficult-airway prediction, preoxygenation and hemodynamic optimization, induction and paralytic agents, the intubation sequence, post-intubation care, and the failed airway. Includes in-lesson widgets (reveal, pick, ordering, calculators, branching scenarios), a module quiz gate, a final exam, and a printable certificate of completion.
 
 Progress is stored locally in the browser (`localStorage`, key `airway_academy_v1`) — nothing is uploaded, and clearing site data resets it.
 
-This is continuing-education material for critical care transport. It is **not** a Linn County standing order — field practice is governed by the MAI protocol and the 2026 formulary in this app.
+**This is training, not a protocol, and not CE credit.** The academy is study material for critical care transport. It is **not** a Linn County standing order — doses taught in the course may differ from the county protocol, and the protocol governs — and it is **not** accredited continuing education, so nothing in it counts toward license or certification renewal. Both distinctions are enforced in the UI rather than left to a footnote:
+
+- It is reachable from the Home screen's **Training &amp; Study** section, not from the protocol tab bar.
+- Its tile carries a `Training` badge and sits under a banner naming it study material that carries no CE credit.
+- The academy page opens with a disclaimer above all content, linking back to the MAI protocol and formulary.
+- The printable completion certificate carries the same wording, since a certificate is the most likely thing to be mistaken for CE documentation.
+- Training uses amber throughout; protocol and reference material uses crimson.
 
 ### Quiz
 Separate credential-level quiz app with instant feedback:
@@ -68,7 +82,7 @@ The app follows the county's civic identity from [linncountyks.gov](https://linn
 | `--steel` / `--ice` / `--white` | `#8FA9C2` `#DCE8F3` `#FFFFFF` | Text on navy |
 | `--paper` / `--paper-2` | `#F5F7FA` `#EAEFF5` | Detail and drug views |
 
-Type is Playfair Display (headings), Source Sans 3 (body), and IBM Plex Mono (labels and doses).
+Type is Playfair Display (headings), Source Sans 3 (body), and IBM Plex Mono (labels and doses), exposed as `--f-display` / `--f-body` / `--f-mono`. All three pages load the **same** Google Fonts URL and share one weight scale topping out at 700 — if you add a page, copy that `<link>` verbatim rather than requesting a different set of weights.
 
 Every colour lives in the `:root` block at the top of `styles.css` — retheming the whole app means editing that block, not hunting through rules. Two categories are deliberately **excluded** from the theme and must not be restyled, because the colours carry clinical meaning:
 
