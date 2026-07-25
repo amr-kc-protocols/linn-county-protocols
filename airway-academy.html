@@ -73,13 +73,16 @@ body{
   font-family:var(--sans); font-size:16px; line-height:1.6;
   -webkit-font-smoothing:antialiased;
 }
-.wrap{ max-width:var(--maxw); margin:0 auto; padding:0 20px; }
+.wrap{ max-width:var(--maxw); margin:0 auto;
+  padding-left:max(20px, env(safe-area-inset-left));
+  padding-right:max(20px, env(safe-area-inset-right)); }
 
 /* ── Back to Protocols ───────────────────────────────────────────── */
 .backlink{
   display:inline-flex; align-items:center; gap:5px;
   font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
-  color:rgba(255,255,255,.92); text-decoration:none; margin:14px 0 0; font-weight:700;
+  color:rgba(255,255,255,.92); text-decoration:none; margin:16px 0 0; font-weight:700;
+  padding:6px 0; min-height:32px;
 }
 .backlink:active{ opacity:.65; }
 
@@ -87,12 +90,18 @@ body{
 header.mon{
   background:var(--grad); color:#fff;
   position:relative; overflow:hidden;
+  /* viewport-fit=cover deliberately extends the page under the status
+     bar and notch, so the inset has to be paid back here or the back
+     link renders underneath the clock. */
+  padding-top:env(safe-area-inset-top, 0px);
 }
 header.mon::after{ /* soft glow */
   content:""; position:absolute; right:-70px; top:-90px; width:280px; height:280px;
   background:radial-gradient(circle,rgba(255,255,255,.28),transparent 68%); pointer-events:none;
 }
-.mon-inner{ max-width:var(--maxw); margin:0 auto; padding:0 20px 2px; position:relative; z-index:2; }
+.mon-inner{ max-width:var(--maxw); margin:0 auto; padding:0 20px 2px; position:relative; z-index:2;
+  padding-left:max(20px, env(safe-area-inset-left));
+  padding-right:max(20px, env(safe-area-inset-right)); }
 .brandrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; }
 .brand{
   font-family:var(--sans); font-weight:700; letter-spacing:.11em;

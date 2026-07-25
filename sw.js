@@ -2,7 +2,7 @@
 // ── Linn County EMS Protocols — Service Worker ───────────────
 // Bump CACHE_VERSION any time you deploy updated files so users
 // get fresh content on next visit.
-const CACHE_VERSION = 'linn-ems-v14';
+const CACHE_VERSION = 'linn-ems-v15';
 
 const APP_ASSETS = [
   './',
