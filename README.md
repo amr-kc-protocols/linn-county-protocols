@@ -12,7 +12,7 @@ Mobile-optimized prehospital medical protocol reference for AMR Linn County, Kan
 Landing screen with a tile grid, modelled on the AMR KC field guide. It splits into two clearly separated groups:
 
 - **Protocols &amp; Reference** — Protocols, Formulary, Scope, Ops, MAI, and the signed PDF. Crimson accents.
-- **Training &amp; Study** — the Airway &amp; RSI Academy and the Protocol Quiz. Amber accents, `Training` / `Self-test` badges, and an explicit banner stating this is study material, **not** a standing order and **not** accredited CE.
+- **Training &amp; Study** — the Airway &amp; RSI Academy and the Protocol Quiz. Amber accents, `Training` / `Self-test` badges, and an explicit banner stating this is study material, **not** a standing order and **not** accredited CE at this time.
 
 The patient-weight tile sits at the top since it drives every computed dose in the app, and reflects the current patient once set. The 2026 PDF and the Quiz also live as icon buttons in the header, keeping the tab bar for app sections only.
 
@@ -43,10 +43,10 @@ Interactive 8-module course on emergency airway management and rapid sequence in
 
 Progress is stored locally in the browser (`localStorage`, key `airway_academy_v1`) — nothing is uploaded, and clearing site data resets it.
 
-**This is training, not a protocol, and not CE credit.** The academy is study material for critical care transport. It is **not** a Linn County standing order — doses taught in the course may differ from the county protocol, and the protocol governs — and it is **not** accredited continuing education, so nothing in it counts toward license or certification renewal. Both distinctions are enforced in the UI rather than left to a footnote:
+**This is training, not a protocol, and not CE credit at this time.** The academy is study material for critical care transport. It is **not** a Linn County standing order — doses taught in the course may differ from the county protocol, and the protocol governs — and it is **not** accredited continuing education at this time, so nothing in it currently counts toward license or certification renewal. Both distinctions are enforced in the UI rather than left to a footnote:
 
 - It is reachable from the Home screen's **Training &amp; Study** section, not from the protocol tab bar.
-- Its tile carries a `Training` badge and sits under a banner naming it study material that carries no CE credit.
+- Its tile carries a `Training` badge and sits under a note naming it study material that carries no CE credit at this time.
 - The academy page opens with a disclaimer above all content, linking back to the MAI protocol and formulary.
 - The printable completion certificate carries the same wording, since a certificate is the most likely thing to be mistaken for CE documentation.
 - Training uses amber throughout; protocol and reference material uses crimson.

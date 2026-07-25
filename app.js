@@ -265,7 +265,7 @@ function renderHome(){
   h+='</div>';
 
   h+='<div class="home-sec edu"><span class="home-sec-label">Training &amp; Study</span></div>';
-  h+='<div class="edu-disclaimer">Study material &mdash; not standing orders, and not CE credit toward renewal.</div>';
+  h+='<div class="edu-disclaimer">Study material &mdash; not standing orders, and not CE credit at this time.</div>';
   h+='<div class="edu-grid" style="margin-top:9px">';
   var ap=academyProgress();
   var apLine=ap?(ap.certified?'Certificate earned &middot; 8 of 8 modules':(ap.done?ap.done+' of 8 modules passed':'Not started &middot; 8 modules')):'Not started &middot; 8 modules';
