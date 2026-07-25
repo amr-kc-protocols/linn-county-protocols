@@ -294,7 +294,7 @@ body{font-family:var(--f-body);background:var(--navy);color:var(--ice);font-size
 
 /* Education tiles — full width, amber, explicitly badged */
 .edu-grid{display:flex;flex-direction:column;gap:10px;padding:0 14px}
-.edu-tile{display:flex;align-items:center;gap:13px;background:var(--navy-2);border:1px solid var(--warn);border-left:3px solid var(--warn-lt);border-radius:9px;padding:14px;text-decoration:none;cursor:pointer;font-family:var(--f-body);text-align:left;width:100%;transition:background .12s}
+.edu-tile{display:flex;align-items:center;gap:13px;background:var(--navy-2);border:1px solid var(--navy-line);border-left:3px solid var(--warn-lt);border-radius:9px;padding:14px;text-decoration:none;cursor:pointer;font-family:var(--f-body);text-align:left;width:100%;transition:background .12s}
 .edu-tile:active{background:var(--navy-3)}
 .edu-ico{width:34px;height:34px;border-radius:8px;background:rgba(242,200,121,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .edu-ico svg{width:19px;height:19px;stroke:var(--warn-lt);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -305,7 +305,7 @@ body{font-family:var(--f-body);background:var(--navy);color:var(--ice);font-size
 .edu-sub{display:block;font-size:12px;color:var(--steel);line-height:1.4}
 .edu-prog{display:block;font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--warn-lt);margin-top:5px}
 .edu-arr{color:var(--steel);font-size:19px;flex-shrink:0}
-.edu-disclaimer{display:flex;gap:8px;margin:10px 14px 0;padding:10px 12px;border-radius:6px;background:var(--warn-dk);border-left:3px solid var(--warn);font-size:12.5px;line-height:1.5;color:var(--warn-lt)}
+.edu-disclaimer{margin:0 16px 2px;font-size:12px;line-height:1.5;color:var(--steel)}
 
 /* ── Keyboard focus ── */
 :focus-visible{outline:2px solid var(--crimson-br);outline-offset:2px}
