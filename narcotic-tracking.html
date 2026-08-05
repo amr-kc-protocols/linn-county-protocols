@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<!--
+  Operative IQ / Frontline — Narcotic Tracking video guide.
+
+  Source: supervisor rollout document "Operative IQ/Linn Co Video Links".
+  The seven links are unchanged; they have been retitled, described and
+  reordered into the order a crew actually performs them (shift start →
+  administration → audit → restock), with the full walkthrough offered
+  first for anyone learning the system from scratch.
+
+  Watch progress persists in localStorage (key: linn_oiq_v1). Videos are
+  hosted on YouTube and require a signal — everything else in this app
+  works offline, so that difference is called out on the page.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1B3A5C">
+<meta name="description" content="Operative IQ / Frontline narcotic tracking — training videos for Linn County EMS field personnel.">
+<title>Narcotic Tracking &mdash; Operative IQ</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+.oiq-wrap{padding:0 0 46px}
+.oiq-hero{padding:20px 16px 16px;text-align:center;border-bottom:1px solid var(--navy-line)}
+.oiq-hero-title{font-family:var(--f-display);font-size:23px;color:var(--white);line-height:1.15}
+.oiq-hero-sub{font-family:var(--f-mono);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--steel);margin-top:7px;line-height:1.6}
+.oiq-intro{padding:15px 16px 0;font-size:15px;line-height:1.6;color:var(--ice)}
+.oiq-intro p{margin-bottom:9px}
+.oiq-note{display:flex;gap:9px;margin:12px 16px 0;padding:11px 13px;border-radius:7px;font-size:13.5px;line-height:1.5;background:var(--warn-dk);border-left:3px solid var(--warn);color:var(--warn-lt)}
+.oiq-note b{color:#FFE0A8}
+.oiq-note-ico{flex-shrink:0;font-size:14px;margin-top:1px}
+.oiq-prog{margin:16px 16px 0;padding:11px 13px;background:var(--navy-2);border:1px solid var(--navy-line);border-radius:8px}
+.oiq-prog-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.oiq-prog-lbl{font-family:var(--f-mono);font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--steel)}
+.oiq-prog-val{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--white)}
+.oiq-bar{height:5px;background:var(--navy);border-radius:3px;overflow:hidden}
+.oiq-bar-fill{height:100%;background:var(--crimson-br);border-radius:3px;transition:width .28s ease;width:0}
+.oiq-reset{background:none;border:none;color:var(--steel);font-family:var(--f-mono);font-size:10.5px;letter-spacing:.6px;text-decoration:underline;cursor:pointer;padding:7px 0 0}
+.oiq-sec{display:flex;align-items:center;gap:9px;margin:24px 16px 3px}
+.oiq-sec-label{font-family:var(--f-mono);font-size:10.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--crimson-lt);white-space:nowrap}
+.oiq-sec-rule{flex:1;height:1px;background:var(--navy-line)}
+.oiq-sec-sub{margin:0 16px 10px;font-size:12.5px;line-height:1.5;color:var(--steel)}
+.oiq-list{display:flex;flex-direction:column;gap:10px;padding:0 16px}
+.oiq-card{display:flex;align-items:flex-start;gap:12px;background:var(--navy-2);border:1px solid var(--navy-line);border-left:3px solid var(--crimson);border-radius:9px;padding:13px;transition:background .12s}
+.oiq-card.done{border-left-color:var(--go);background:#16324A}
+.oiq-card.feature{border-left-color:var(--warn-lt);background:linear-gradient(135deg,var(--navy-2),#1E4062)}
+.oiq-play{flex-shrink:0;width:38px;height:38px;border-radius:9px;background:rgba(200,57,76,.16);display:flex;align-items:center;justify-content:center;text-decoration:none}
+.oiq-card.done .oiq-play{background:rgba(46,125,91,.2)}
+.oiq-card.feature .oiq-play{background:rgba(242,200,121,.16)}
+.oiq-play svg{width:17px;height:17px;fill:var(--crimson-lt)}
+.oiq-card.done .oiq-play svg{fill:var(--go-lt)}
+.oiq-card.feature .oiq-play svg{fill:var(--warn-lt)}
+.oiq-body{flex:1;min-width:0}
+.oiq-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px}
+.oiq-name{font-size:15.5px;font-weight:700;color:var(--white);line-height:1.25}
+.oiq-tag{font-family:var(--f-mono);font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:3px;padding:2px 6px;flex-shrink:0;background:var(--warn-lt);color:var(--warn-dk)}
+.oiq-desc{font-size:13px;color:var(--steel);line-height:1.5}
+.oiq-meta{display:flex;align-items:center;gap:12px;margin-top:9px;flex-wrap:wrap}
+.oiq-open{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--white);background:var(--crimson);border-radius:5px;padding:7px 12px;text-decoration:none;min-height:34px;box-sizing:border-box}
+.oiq-open:active{background:var(--crimson-br)}
+.oiq-check{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--steel);background:none;border:none;cursor:pointer;padding:8px 2px;min-height:34px}
+.oiq-box{width:16px;height:16px;border:1.6px solid var(--steel);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;line-height:1;color:transparent;flex-shrink:0}
+.oiq-card.done .oiq-box{background:var(--go);border-color:var(--go);color:#fff}
+.oiq-card.done .oiq-check{color:var(--go-lt)}
+.oiq-foot{margin:26px 16px 0;padding-top:14px;border-top:1px solid var(--navy-line);font-size:12px;line-height:1.6;color:var(--steel)}
+@media(min-width:768px){.oiq-wrap{max-width:760px;margin:0 auto}}
+@media(prefers-reduced-motion:reduce){.oiq-bar-fill{transition:none}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to videos</a>
+<div id="header">
+  <div class="header-top">
+    <div class="badge">
+      <svg viewBox="0 0 512 580" fill="none" aria-hidden="true">
+        <path d="M383.8 351.7c2.5-2.5 105.2-92.4 105.2-92.4l-17.5-7.5c-10-4.9-7.4-11.5-5-17.4 2.4-7.6 20.1-67.3 20.1-67.3s-47.7 10-57.7 12.5c-7.5 2.4-10-2.5-12.5-7.5s-15-32.4-15-32.4-52.6 59.9-55.1 62.3c-10 7.5-20.1-2.5-17.6-12.5 0-10 27.6-129.6 27.6-129.6s-30.1 17.4-40.1 22.4c-5 2.5-10 2.5-15-5C293.5 72.3 255.9 0 255.9 0s-37.5 72.3-42.5 79.8c-5 7.5-10 7.5-15 5-10-5-40.1-22.4-40.1-22.4S185.9 182 185.9 192c2.5 10-7.5 20-17.6 12.5-2.5-2.4-55.1-62.3-55.1-62.3S100.7 174.6 98.2 179.6s-5 9.9-12.5 7.5C75.7 184.6 28 174.6 28 174.6S45.7 234.3 48.1 241.9c2.4 6 5 12.5-5 17.4L25.6 266.8s102.7 89.9 105.2 92.4c5.1 5 10 7.5 5.1 22.5-5.1 15-10.1 35-10.1 35s95.2-20 105.3-22.5c8.7-.9 18.3 2.5 18.3 12.5S246 512 246 512h20s-3.4-95.8-3.4-105.8 9.5-13.4 18.4-12.5c10 2.5 105.2 22.5 105.2 22.5s-5-20-10-35 0-17.5 5.1-22.5z" fill="#FFFFFF"/>
+        <path d="M34,548Q256,590,478,540" stroke="#FFFFFF" stroke-width="24" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="title-block">
+      <div class="title-main">Narcotic Tracking</div>
+      <div class="title-sub">Operative IQ &middot; Frontline</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <a href="index.html" class="nav-tab">&#8592; Back to Protocols</a>
+  </div>
+</div>
+
+<div id="content">
+<div class="oiq-wrap">
+
+  <div class="oiq-hero">
+    <div class="oiq-hero-title">Operative IQ Narcotic Check</div>
+    <div class="oiq-hero-sub">Frontline Mobile &amp; Desktop<br>Training videos for field personnel</div>
+  </div>
+
+  <div class="oiq-intro">
+    <p>Linn County EMS is moving narcotic tracking into <b>Operative IQ</b>. Controlled substances are counted, signed for, administered and restocked in the <b>Frontline</b> app instead of on paper.</p>
+    <p>Each short video below covers one task. If you are new to the system, start with the full walkthrough, then use the task videos as refreshers when you hit that step on shift.</p>
+  </div>
+
+  <div class="oiq-note">
+    <span class="oiq-note-ico">&#9888;</span>
+    <span><b>These videos need a signal.</b> The rest of this app works offline, but the videos stream from YouTube. Watch them at the station or on cell service &mdash; not somewhere you are counting on offline access.</span>
+  </div>
+
+  <div class="oiq-prog">
+    <div class="oiq-prog-top">
+      <span class="oiq-prog-lbl">Your progress</span>
+      <span class="oiq-prog-val" id="oiqCount">0 of 7 watched</span>
+    </div>
+    <div class="oiq-bar"><div class="oiq-bar-fill" id="oiqFill"></div></div>
+    <button class="oiq-reset" id="oiqReset" type="button" hidden>Reset progress</button>
+  </div>
+
+  <div id="oiqSections"></div>
+
+  <div class="oiq-foot">
+    Videos produced by Operative IQ. Links distributed by the Linn County EMS supervisor for the narcotic tracking rollout. Progress is stored on this device only &mdash; checking a box here is not a training record, and does not replace any sign-off your supervisor requires.
+  </div>
+
+</div>
+</div>
+
+<script>
+// Seven supervisor-provided videos, grouped by when a crew performs the task.
+var OIQ_SECTIONS = [
+  {
+    label: 'Start Here',
+    sub: 'The complete narcotic control workflow end to end. Watch this one first if the system is new to you.',
+    videos: [
+      { id: 'Mj-u6s4Pels', tag: 'Full course',
+        name: 'Narcotic Control in Frontline — Full Video',
+        desc: 'The complete walkthrough: how controlled substances move through Frontline from crew change, through administration, to restock.' }
+    ]
+  },
+  {
+    label: 'Every Shift',
+    sub: 'The three tasks you will use on a normal shift.',
+    videos: [
+      { id: 'AynYCCtIEY4',
+        name: 'Crew Change — Taking Custody of the Narcs',
+        desc: 'Picking up controlled substances from the off-going crew in Frontline: the shift-change count and sign-off.' },
+      { id: 'MkG8YM5uJw4',
+        name: 'Administering a Controlled Substance',
+        desc: 'Documenting a narcotic given to a patient — recording the dose, waste and witness in Frontline.' },
+      { id: '2cPBSeqjMfs',
+        name: 'Viewing and Auditing Narcotics',
+        desc: 'Pulling up current inventory and running an audit to verify counts against what the system shows.' }
+    ]
+  },
+  {
+    label: 'Restocking',
+    sub: 'Replacing what you used — on the truck, at the desktop, and out of the bulk safe.',
+    videos: [
+      { id: 'c-lpTYY-fe8',
+        name: 'Restocking Medications in Frontline',
+        desc: 'Restocking used medications from the Frontline mobile app.' },
+      { id: '1yQcWLHYwek', tag: 'Desktop',
+        name: 'Restocking Boxes — Operative IQ Desktop',
+        desc: 'Restocking drug boxes using the Operative IQ desktop version rather than the mobile app.' },
+      { id: '8UG-bBfiNFM',
+        name: 'Mobile Safe from Bulk Safe — Audit and Receive',
+        desc: 'Restocking the mobile safe out of the bulk safe, then auditing and receiving the transfer.' }
+    ]
+  }
+];
+
+var OIQ_KEY = 'linn_oiq_v1';
+var watched = {};
+try { watched = JSON.parse(localStorage.getItem(OIQ_KEY) || '{}') || {}; } catch (e) { watched = {}; }
+function saveWatched() { try { localStorage.setItem(OIQ_KEY, JSON.stringify(watched)); } catch (e) {} }
+
+var TOTAL = OIQ_SECTIONS.reduce(function (n, s) { return n + s.videos.length; }, 0);
+var PLAY_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderSections() {
+  var html = '';
+  OIQ_SECTIONS.forEach(function (sec) {
+    html += '<div class="oiq-sec"><span class="oiq-sec-label">' + esc(sec.label) + '</span><span class="oiq-sec-rule"></span></div>';
+    if (sec.sub) html += '<div class="oiq-sec-sub">' + esc(sec.sub) + '</div>';
+    html += '<div class="oiq-list">';
+    sec.videos.forEach(function (v) {
+      var done = !!watched[v.id];
+      var url = 'https://youtu.be/' + v.id;
+      html += '<div class="oiq-card' + (done ? ' done' : '') + (v.tag === 'Full course' ? ' feature' : '') + '" id="card-' + v.id + '">' +
+        '<a class="oiq-play" href="' + url + '" target="_blank" rel="noopener" aria-label="Play: ' + esc(v.name) + '">' + PLAY_SVG + '</a>' +
+        '<div class="oiq-body">' +
+          '<div class="oiq-top"><span class="oiq-name">' + esc(v.name) + '</span>' +
+            (v.tag ? '<span class="oiq-tag">' + esc(v.tag) + '</span>' : '') + '</div>' +
+          '<div class="oiq-desc">' + esc(v.desc) + '</div>' +
+          '<div class="oiq-meta">' +
+            '<a class="oiq-open" href="' + url + '" target="_blank" rel="noopener">' + PLAY_SVG + ' Watch</a>' +
+            '<button class="oiq-check" type="button" data-vid="' + v.id + '" aria-pressed="' + (done ? 'true' : 'false') + '">' +
+              '<span class="oiq-box">&#10003;</span>' + (done ? 'Watched' : 'Mark watched') +
+            '</button>' +
+          '</div>' +
+        '</div></div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('oiqSections').innerHTML = html;
+
+  document.querySelectorAll('.oiq-check').forEach(function (b) {
+    b.onclick = function () {
+      var id = b.dataset.vid;
+      if (watched[id]) delete watched[id]; else watched[id] = 1;
+      saveWatched();
+      renderSections();
+      updateProgress();
+    };
+  });
+}
+
+function updateProgress() {
+  var done = OIQ_SECTIONS.reduce(function (n, s) {
+    return n + s.videos.filter(function (v) { return watched[v.id]; }).length;
+  }, 0);
+  document.getElementById('oiqCount').textContent =
+    done === TOTAL ? 'All ' + TOTAL + ' watched' : done + ' of ' + TOTAL + ' watched';
+  document.getElementById('oiqFill').style.width = Math.round((done / TOTAL) * 100) + '%';
+  document.getElementById('oiqReset').hidden = done === 0;
+}
+
+document.getElementById('oiqReset').onclick = function () {
+  watched = {};
+  saveWatched();
+  renderSections();
+  updateProgress();
+};
+
+renderSections();
+updateProgress();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(function (err) { console.warn('SW registration failed:', err); });
+  });
+}
+</script>
+</body>
+</html>
