@@ -428,6 +428,14 @@ function academyProgress(){
   }catch(e){return null;}
 }
 
+// Videos marked watched on the Operative IQ narcotic tracking page.
+function oiqProgress(){
+  try{
+    var s=JSON.parse(localStorage.getItem('linn_oiq_v1')||'null');
+    return s?Object.keys(s).length:0;
+  }catch(e){return 0;}
+}
+
 function renderHome(){
   var h='<div class="home">';
   h+='<div class="home-hero"><div class="home-hero-title">Linn County EMS</div>'+
@@ -470,6 +478,13 @@ function renderHome(){
      '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>'+
      '<span class="edu-body"><span class="edu-top"><span class="edu-name">Protocol Quiz</span><span class="edu-badge">Self-test</span></span>'+
      '<span class="edu-sub">EMT, AEMT and Paramedic question banks with instant feedback</span></span>'+
+     '<span class="edu-arr">&rsaquo;</span></a>';
+  var oiq=oiqProgress();
+  h+='<a class="edu-tile" href="narcotic-tracking.html">'+
+     '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-pill"></use></svg></span>'+
+     '<span class="edu-body"><span class="edu-top"><span class="edu-name">Narcotic Tracking</span><span class="edu-badge">Rollout</span></span>'+
+     '<span class="edu-sub">Operative IQ &amp; Frontline &mdash; crew change, administration, audit and restock</span>'+
+     '<span class="edu-prog">'+(oiq?(oiq>=7?'All 7 videos watched':oiq+' of 7 videos watched'):'7 short videos')+'</span></span>'+
      '<span class="edu-arr">&rsaquo;</span></a>';
   h+='</div></div>';
   document.getElementById('content').innerHTML=h;
