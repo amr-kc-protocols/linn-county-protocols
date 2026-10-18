@@ -436,6 +436,61 @@ function oiqProgress(){
   }catch(e){return 0;}
 }
 
+// ── Refresher sign-up ────────────────────────────────────────
+// Home-screen banner for the National Registry Refresher, same class and
+// sign-up as the KC field guide. It shows until the last session and then
+// stops rendering on its own, so a dead sign-up link never lingers on an
+// app crews run offline. To change the class, edit this block; to pull it
+// early, set `end` to a past date.
+var REFRESHER={
+  title:'National Registry Refresher',
+  levels:'All levels &mdash; EMR, EMT, AEMT and Paramedic',
+  note:'Also accepted for Kansas CE as out-of-state continuing education.',
+  nights:[1,3],                    // Date.getDay(): Monday and Wednesday
+  when:'Mondays &amp; Wednesdays, 1700&ndash;2100',
+  start:'2026-10-12',              // first session
+  end:'2026-11-18',                // last session — banner hides after this
+  url:'https://www.signupgenius.com/go/10C0D4AABAB2CA6F4C52-65569881-rocky#/'
+};
+// 'YYYY-MM-DD' as local midnight (new Date('2026-10-12') parses as UTC,
+// which is the 11th in Kansas).
+function rfrDate(iso){var p=String(iso).split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+var RFR_DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var RFR_MONS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function rfrLongDate(d){return RFR_DAYS[d.getDay()]+', '+RFR_MONS[d.getMonth()]+' '+d.getDate();}
+function rfrDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+// Next class night on or after `from`, or null once the course has ended.
+function rfrNextSession(from,end,nights){
+  var d=rfrDay(from);
+  for(var i=0;i<=14;i++){
+    if(d>end)return null;
+    if(nights.indexOf(d.getDay())!==-1)return d;
+    d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);
+  }
+  return null;
+}
+// Banner markup, or '' once the course is over. `now` is injectable for tests.
+function refresherCard(now){
+  var R=REFRESHER;
+  if(!R||!R.url)return '';
+  var today=rfrDay(now||new Date()),start=rfrDate(R.start),end=rfrDate(R.end);
+  if(today>end)return '';
+  var when;
+  if(today<start){
+    var days=Math.round((start-today)/86400000);
+    when='Starts '+rfrLongDate(start)+(days<=21?' &middot; '+days+(days===1?' day':' days')+' away':'');
+  }else{
+    var next=rfrNextSession(today,end,R.nights);
+    when=next?(next.getTime()===today.getTime()?'Tonight':'Next session '+rfrLongDate(next)):'Final sessions this week';
+  }
+  return '<a class="rfr" href="'+R.url+'" target="_blank" rel="noopener noreferrer">'+
+    '<span class="rfr-top"><span class="rfr-badge">Sign-up open</span><span class="rfr-when">'+when+'</span></span>'+
+    '<span class="rfr-title">'+R.title+'</span>'+
+    '<span class="rfr-meta">'+R.levels+' &middot; '+R.when+'</span>'+
+    '<span class="rfr-note">'+R.note+'</span>'+
+    '<span class="rfr-go">Sign up on SignUpGenius &rsaquo;</span></a>';
+}
+
 function renderHome(){
   var h='<div class="home">';
   h+='<div class="home-hero"><div class="home-hero-title">Linn County EMS</div>'+
@@ -451,6 +506,8 @@ function renderHome(){
        '<span class="home-pt-body"><span class="home-pt-val">Set patient weight</span>'+
        '<span class="home-pt-lbl">Unlocks weight-based dosing everywhere</span></span><span class="home-pt-arr">&rsaquo;</span></button>';
   }
+
+  h+=refresherCard();
 
   h+='<div class="home-sec"><span class="home-sec-label">Protocols &amp; Reference</span></div>';
   h+='<div class="qa-grid">';

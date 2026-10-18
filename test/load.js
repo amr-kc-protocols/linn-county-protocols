@@ -61,7 +61,7 @@ function makeSandbox() {
 const EXPORTS = [
   'fmt', 'pk', 'pkr', 'PT_CALC', 'BROSELOW', 'SECTIONS', 'OPS_DATA',
   'maiDoses', 'getScopeClass', 'FORMULARY', 'SCOPE_DATA',
-  'searchAll', 'stripHtml', 'SEARCH_ALIASES',
+  'searchAll', 'stripHtml', 'SEARCH_ALIASES', 'refresherCard',
 ];
 
 // Evaluate data.js and app.js in one shared context, the way the browser
