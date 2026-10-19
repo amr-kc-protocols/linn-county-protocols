@@ -491,6 +491,22 @@ function refresherCard(now){
     '<span class="rfr-go">Sign up on SignUpGenius &rsaquo;</span></a>';
 }
 
+// Kansas license renewal bar — shown Aug 1 – Dec 31. `now` is injectable
+// for tests. Returns '' the rest of the year.
+function renewalCard(now){
+  now=now||new Date();
+  var y=now.getFullYear(),m=now.getMonth();
+  if(m<7)return '';
+  var today=new Date(y,m,now.getDate()),due=new Date(y,11,1),exp=new Date(y,11,31);
+  var late=today>due,days=Math.round(((late?exp:due)-today)/86400000);
+  var title=late?'Late fee now &mdash; renew by Dec 31':(days===0?'Kansas license renewal is due today':'Kansas license renewal due Dec 1');
+  var sub=late?'License expires after Dec 31. Tap for steps':'Expiring this year? Steps, CE hours &amp; fees';
+  return '<a class="rnw'+(late?' late':'')+'" href="kansas-relicensure.html">'+
+    '<span class="rnw-body"><span class="rnw-title">'+title+'</span><span class="rnw-sub">'+sub+'</span></span>'+
+    (days>0?'<span class="rnw-days"><b>'+days+'</b><small>'+(days===1?'day':'days')+'</small></span>':'')+
+    '<span class="rnw-arr" aria-hidden="true">&rsaquo;</span></a>';
+}
+
 function renderHome(){
   var h='<div class="home">';
   h+='<div class="home-hero"><div class="home-hero-title">Linn County EMS</div>'+
@@ -507,6 +523,7 @@ function renderHome(){
        '<span class="home-pt-lbl">Unlocks weight-based dosing everywhere</span></span><span class="home-pt-arr">&rsaquo;</span></button>';
   }
 
+  h+=renewalCard();
   h+=refresherCard();
 
   h+='<div class="home-sec"><span class="home-sec-label">Protocols &amp; Reference</span></div>';

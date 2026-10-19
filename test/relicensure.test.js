@@ -10,6 +10,9 @@ const path = require('node:path');
 const ROOT = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const page = read('kansas-relicensure.html');
+const { loadApp } = require('./load');
+const { renewalCard } = loadApp();
+const at = (y, m, d) => new Date(y, m - 1, d, 12);
 
 function hoursRows() {
   const start = page.indexOf('<h2 id="hours">');
@@ -45,4 +48,19 @@ test('outside links are https and the portal is linked', () => {
 test('linked from Home and precached', () => {
   assert.match(read('app.js'), /href="kansas-relicensure\.html"/);
   assert.match(read('sw.js'), /'\.\/kansas-relicensure\.html'/);
+});
+
+test('home renewal bar: Aug 1 – Dec 31 only, late after Dec 1', () => {
+  assert.strictEqual(renewalCard(at(2026, 7, 31)), '');
+  assert.strictEqual(renewalCard(at(2027, 1, 1)), '');
+  assert.match(renewalCard(at(2026, 8, 1)), /due Dec 1/);
+  const oct = renewalCard(at(2026, 10, 19));
+  assert.match(oct, /<b>43<\/b>/);
+  assert.doesNotMatch(oct, /late/);
+  assert.match(oct, /href="kansas-relicensure\.html"/);
+  assert.match(renewalCard(at(2026, 12, 1)), /due today/);
+  const dec2 = renewalCard(at(2026, 12, 2));
+  assert.match(dec2, /class="rnw late"/);
+  assert.match(dec2, /<b>29<\/b>/);
+  assert.doesNotMatch(renewalCard(at(2026, 12, 31)), /rnw-days/);
 });
