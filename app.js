@@ -531,6 +531,11 @@ function renderHome(){
      '<span class="edu-body"><span class="edu-top"><span class="edu-name">Airway &amp; RSI Academy</span><span class="edu-badge">Training</span></span>'+
      '<span class="edu-sub">Interactive course &mdash; the decision to intubate, the difficult airway, and physiologic optimization</span>'+
      '<span class="edu-prog">'+apLine+'</span></span><span class="edu-arr">&rsaquo;</span></a>';
+  h+='<a class="edu-tile" href="kansas-relicensure.html">'+
+     '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-badge"></use></svg></span>'+
+     '<span class="edu-body"><span class="edu-top"><span class="edu-name">Kansas License Renewal</span><span class="edu-badge">Guide</span></span>'+
+     '<span class="edu-sub">Renew your EMT, AEMT or Paramedic license &mdash; dates, CE hours, fees and CE questions</span></span>'+
+     '<span class="edu-arr">&rsaquo;</span></a>';
   h+='<a class="edu-tile" href="quiz.html">'+
      '<span class="edu-ico"><svg viewBox="0 0 24 24"><use href="#i-check"></use></svg></span>'+
      '<span class="edu-body"><span class="edu-top"><span class="edu-name">Protocol Quiz</span><span class="edu-badge">Self-test</span></span>'+
