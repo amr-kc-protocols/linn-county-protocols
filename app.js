@@ -29,7 +29,7 @@ function ptPanelHtml(rules){
 
 // The emergency dose card: every PT_CALC rule tagged with a qc group,
 // grouped and ordered by urgency, computed for the current patient.
-var QC_ORDER=['Cardiac Arrest','Anaphylaxis','Seizure','Hypoglycemia','Opioid OD','Brady / SVT','Fluids & Pressors','MAI — PM'];
+var QC_ORDER=['Cardiac Arrest','Anaphylaxis','Seizure','Hypoglycemia','Opioid OD','Brady / SVT','Fluids & Pressors','MAI'];
 function quickCardInner(){
   if(!PT)return'<div class="pt-quick-empty">Enter a weight to see this patient&rsquo;s emergency doses</div>';
   var byGroup={};
@@ -138,15 +138,6 @@ function softRender(){
 }
 
 // ── RENDER FUNCTIONS ─────────────────────────────────────────
-function getScopeClass(s){
-  if(!s)return'scope-all';const l=s.toLowerCase();
-  if(l==='all')return'scope-all';
-  if(l.includes('emt')&&l.includes('aemt')&&l.includes('pm'))return'scope-all';
-  if(l.startsWith('pm')&&!l.includes('aemt')&&!l.includes('emt'))return'scope-pm';
-  if(l.includes('aemt')&&!l.startsWith('pm')&&!l.includes('emt,'))return'scope-aemt';
-  return'scope-multi';
-}
-
 function cardCls(animate,i){return animate?'card-appear" style="animation-delay:'+(i*.03)+'s"':'"';}
 
 function renderProtocols(q,animate){
@@ -155,7 +146,7 @@ function renderProtocols(q,animate){
     const f=q?sec.items.filter(i=>i.title.toLowerCase().includes(q)||(i.body&&i.body.toLowerCase().includes(q))):sec.items;
     if(!f.length)return;shown+=f.length;
     html+='<div class="section-header"><span class="section-icon">'+sec.icon+'</span><span class="section-label">'+sec.section+'</span></div>';
-    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(item.title)+', scope '+esc(item.scope)+'" data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="scope-pill '+getScopeClass(item.scope)+'">'+item.scope+'</span><span class="chevron" aria-hidden="true">›</span></div></div>';});
+    f.forEach((item,i)=>{html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(item.title)+'" data-type="protocol" data-id="'+item.id+'"><div class="card-row"><div class="card-title">'+item.title+'</div><span class="chevron" aria-hidden="true">›</span></div></div>';});
   });
   if(!shown)html='<div class="empty-state"><div class="es-icon">🌾</div><div class="es-text">No protocols match "'+esc(q)+'"</div></div>';
   c.innerHTML=html;
@@ -170,7 +161,7 @@ function renderFormulary(q,animate){
 
 // Shared by the formulary tab and search results.
 function drugCardHtml(d,animate,i){
-  return'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Scope</span><span class="drug-row-val">'+(d.scope)+'</span></div><div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>';
+  return'<div class="drug-card '+cardCls(animate,i)+'><div class="drug-header"><div><div class="drug-name">'+(d.name)+(d.isNew?'<span class="drug-new-badge" style="margin-left:8px">NEW</span>':'')+'</div><div class="drug-class">'+(d.cls)+'</div></div></div><div class="drug-body">'+ptPanelHtml(ptRules(d.name))+'<div class="drug-row"><span class="drug-row-label">Dosing</span><span class="drug-row-val">'+(d.dose)+'</span></div>'+(d.ci?'<div class="drug-row"><span class="drug-row-label">Contraind.</span><span class="drug-row-val">'+d.ci+'</span></div>':'')+(d.warn?'<div class="drug-warn">⚠ '+d.warn+'</div>':'')+'</div></div>';
 }
 
 function scopeCellsHtml(row){
@@ -200,7 +191,7 @@ function renderOps(q,animate){
 
 function renderMAI(){
   const c=document.getElementById('content');
-  c.innerHTML='<div style="padding:14px 14px 40px">\n  <div class="mai-warn-banner"><span style="font-size:18px;flex-shrink:0">⚠</span><span><b>PM scope only.</b> NMBA causes complete respiratory paralysis. Sedation and analgesia MUST be given before the paralytic. The patient is fully awake and aware without them.</span></div>\n  <div class="mai-calc"><div class="mai-calc-title">Weight-Based Dose Calculator</div>\n  <div class="weight-input-row"><input type="number" id="maiWeight" inputmode="decimal" placeholder="—" min="1" max="300" step="0.1"><button class="weight-unit-btn active" id="btnKg">kg</button><button class="weight-unit-btn" id="btnLbs">lbs</button></div>\n  <div class="calc-results" id="calcResults"><div class="calc-placeholder">Enter patient weight above</div></div></div>\n  <div style="margin-bottom:8px;font-family:var(--f-mono);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--white);border-bottom:1px solid var(--crimson);padding-bottom:6px">Step-by-Step Procedure</div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 1 — PREPARATION</div>\n  <div class="mai-step"><div class="mai-step-num">1</div><div class="mai-step-content"><div class="mai-step-title">Confirm indication</div><div class="mai-step-desc">GCS ≤ 8 with failure to protect airway, respiratory failure refractory to BVM/CPAP, anticipated airway deterioration.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">2</div><div class="mai-step-content"><div class="mai-step-title">Pre-oxygenate</div><div class="mai-step-desc">NRB at 15 LPM for minimum 3 minutes. Apneic oxygenation via NC at 15 LPM throughout procedure.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">3</div><div class="mai-step-content"><div class="mai-step-title">Assemble and check equipment</div><div class="mai-step-desc">Laryngoscope (blade tested), ETT (7.5–8.0 adult male, 7.0–7.5 adult female), 10 mL syringe, stylet, ETCO2, securing device, suction ready and ON, BVM at hand.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">4</div><div class="mai-step-content"><div class="mai-step-title">Confirm IV/IO access and position patient</div><div class="mai-step-desc">Patent and aspirating. Flush before medications. Ear-to-sternal-notch alignment. Ramp if obese.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 2 — INDUCTION</div>\n  <div class="mai-step"><div class="mai-step-num">5</div><div class="mai-step-content"><div class="mai-step-title">Administer Ketamine (Induction)</div><div class="mai-step-desc">1–1.5 mg/kg IV over 1 minute. Wait 60 seconds for onset. Signs of induction: eyes deviate, nystagmus, muscle relaxation.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">6</div><div class="mai-step-content"><div class="mai-step-title">Administer paralytic</div><div class="mai-step-desc">Vecuronium 0.1 mg/kg IV slow push over 30–60 seconds. OR Rocuronium 1 mg/kg IV (extended formulary — faster onset ~45–60 sec). Onset: 60–90 seconds. Confirm paralysis: jaw relaxation, absence of spontaneous movement.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 3 — INTUBATION</div>\n  <div class="mai-step"><div class="mai-step-num">7</div><div class="mai-step-content"><div class="mai-step-title">Laryngoscopy</div><div class="mai-step-desc">Blade in right side of mouth, sweep tongue left. Advance to vallecula (Mac) or under epiglottis (Miller). Lift — do not lever. Visualize vocal cords before advancing tube.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">8</div><div class="mai-step-content"><div class="mai-step-title">Pass ETT and confirm placement</div><div class="mai-step-desc">Advance until cuff passes 2–3 cm past cords. Adult depth: 21–23 cm at teeth. Inflate cuff 5–10 mL. Waveform ETCO2 gold standard — must see ≥ 6 consecutive waveforms. If no waveform: tube is in esophagus — remove immediately, BVM, reoxygenate, retry.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 4 — POST-INTUBATION</div>\n  <div class="mai-step"><div class="mai-step-num">9</div><div class="mai-step-content"><div class="mai-step-title">Ventilate to targets</div><div class="mai-step-desc">Rate: 10–12/min adult. TV: 6–8 mL/kg. SpO2 target: 94–98%. ETCO2 target: 35–45 mmHg. Do not hyperventilate.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">10</div><div class="mai-step-content"><div class="mai-step-title">Maintain sedation</div><div class="mai-step-desc">Midazolam 2.5–5 mg IV every 10–30 min as needed. Patient is paralyzed and fully aware without ongoing sedation.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 12px">FAILED AIRWAY RESCUE</div>\n  <div class="callout callout-warn"><span class="callout-icon">⚠</span><span><b>If unable to intubate after 2 attempts:</b> BVM ventilate, place King LT supraglottic airway, contact DMO. If unable to oxygenate via BVM or SGA: surgical cricothyrotomy.</span></div>\n  <div class="callout callout-key"><span class="callout-icon">★</span><span>The paralyzed patient cannot protect their own airway. You own it. There is no backing out after the paralytic.</span></div>\n  </div>';
+  c.innerHTML='<div style="padding:14px 14px 40px">\n  <div class="mai-warn-banner"><span style="font-size:18px;flex-shrink:0">⚠</span><span>NMBA causes complete respiratory paralysis. Sedation and analgesia MUST be given before the paralytic. The patient is fully awake and aware without them.</span></div>\n  <div class="mai-calc"><div class="mai-calc-title">Weight-Based Dose Calculator</div>\n  <div class="weight-input-row"><input type="number" id="maiWeight" inputmode="decimal" placeholder="—" min="1" max="300" step="0.1"><button class="weight-unit-btn active" id="btnKg">kg</button><button class="weight-unit-btn" id="btnLbs">lbs</button></div>\n  <div class="calc-results" id="calcResults"><div class="calc-placeholder">Enter patient weight above</div></div></div>\n  <div style="margin-bottom:8px;font-family:var(--f-mono);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--white);border-bottom:1px solid var(--crimson);padding-bottom:6px">Step-by-Step Procedure</div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 1 — PREPARATION</div>\n  <div class="mai-step"><div class="mai-step-num">1</div><div class="mai-step-content"><div class="mai-step-title">Confirm indication</div><div class="mai-step-desc">Apnea or impending apnea; upper airway obstruction not manageable by less invasive means; head injury with GCS ≤ 8 and inability to protect airway; respiratory insufficiency after less invasive measures fail; hemodynamic instability requiring airway protection; status epilepticus refractory to benzodiazepines with SpO2 &lt; 94%; combative patient threatening airway, spine, or transport safety. Do NOT give an NMBA unless you are confident you can BVM-ventilate if intubation fails (contraindicated: epiglottitis, severe maxillofacial trauma, altered anatomy).</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">2</div><div class="mai-step-content"><div class="mai-step-title">Pre-oxygenate</div><div class="mai-step-desc">NRB at 15 LPM for minimum 3 minutes. Apneic oxygenation via NC at 10–15 LPM under the NRB, maintained throughout laryngoscopy. Avoid BVM unless SpO2 is falling.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">3</div><div class="mai-step-content"><div class="mai-step-title">Assemble and check equipment</div><div class="mai-step-desc">Laryngoscope (blade tested), ETT (adult typically 7.5–8.0; pediatric per Broselow) plus one size smaller, 10 mL syringe, stylet (35° hockey-stick), King SGA as rescue airway, cricothyrotomy kit within reach, ETCO2, securing device, suction ready and ON, BVM at hand.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">4</div><div class="mai-step-content"><div class="mai-step-title">Confirm IV/IO access and position patient</div><div class="mai-step-desc">Patent and aspirating. Flush before medications. Ear-to-sternal-notch alignment. Ramp if obese.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 2 — INDUCTION</div>\n  <div class="mai-step"><div class="mai-step-num">5</div><div class="mai-step-content"><div class="mai-step-title">Administer Ketamine (Induction)</div><div class="mai-step-desc">1–2 mg/kg IV/IO over 1 minute (consider 0.5–1 mg/kg if hypotensive or in shock). Wait 60 seconds for onset. Signs of induction: eyes deviate, nystagmus, muscle relaxation.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">6</div><div class="mai-step-content"><div class="mai-step-title">Administer paralytic</div><div class="mai-step-desc">Vecuronium 0.1 mg/kg IV slow push over 30–60 seconds. OR Rocuronium 1–1.2 mg/kg IV/IO (extended formulary). Onset: 60–90 seconds. Confirm paralysis: jaw relaxation, absence of spontaneous movement.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 3 — INTUBATION</div>\n  <div class="mai-step"><div class="mai-step-num">7</div><div class="mai-step-content"><div class="mai-step-title">Laryngoscopy</div><div class="mai-step-desc">Blade in right side of mouth, sweep tongue left. Advance to vallecula (Mac) or under epiglottis (Miller). Lift — do not lever. Visualize vocal cords before advancing tube.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">8</div><div class="mai-step-content"><div class="mai-step-title">Pass ETT and confirm placement</div><div class="mai-step-desc">Suction before blade insertion. Pass ETT under direct visualization until cuff is 1–2 cm below the cords. Inflate cuff with 10–12 mL. Confirm with a MINIMUM of three methods — one MUST be continuous waveform ETCO2 — plus bilateral breath sounds and absent gastric sounds. Note depth at teeth. If ETCO2 absent or gastric sounds present: remove tube immediately and BVM ventilate. LIMIT TO ONE ATTEMPT — if unsuccessful within 20 seconds, stop and ventilate.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 0">PHASE 4 — POST-INTUBATION</div>\n  <div class="mai-step"><div class="mai-step-num">9</div><div class="mai-step-content"><div class="mai-step-title">Ventilate to targets</div><div class="mai-step-desc">Rate: 10–12/min adult. TV: 6–8 mL/kg. SpO2 target: 94–98%. ETCO2 target: 35–45 mmHg. Do not hyperventilate.</div></div></div>\n  <div class="mai-step"><div class="mai-step-num">10</div><div class="mai-step-content"><div class="mai-step-title">Maintain sedation</div><div class="mai-step-desc">Midazolam 2.5–5 mg IV every 10–30 min as needed. Patient is paralyzed and fully aware without ongoing sedation.</div></div></div>\n  <div class="mai-phase-header" style="margin:10px -14px 12px">FAILED AIRWAY RESCUE</div>\n  <div class="callout callout-warn"><span class="callout-icon">⚠</span><span><b>If intubation fails after ONE attempt:</b> (1) BVM ventilate to restore SpO2 &gt; 94%. (2) Place SGA (King Airway or equivalent). (3) If SGA ventilation fails: surgical cricothyrotomy immediately.</span></div>\n  <div class="callout callout-key"><span class="callout-icon">★</span><span>The paralyzed patient cannot protect their own airway. You own it. There is no backing out after the paralytic.</span></div>\n  </div>';
   document.getElementById('maiWeight').addEventListener('input',calcMAIDoses);
   document.getElementById('btnKg').addEventListener('click',function(){setUnit('kg');});
   document.getElementById('btnLbs').addEventListener('click',function(){setUnit('lbs');});
@@ -216,9 +207,9 @@ function setUnit(u){maiUnit=u;document.getElementById('btnKg').classList.toggle(
 function maiDoses(kg){
   kg=Math.min(kg,300);
   return [
-    {name:'Ketamine (Induction)',detail:'1–1.5 mg/kg IV over 1 min',lo:kg*1,hi:kg*1.5,unit:'mg',note:'Administer over 60 sec. Wait 60 sec for effect.'},
+    {name:'Ketamine (Induction)',detail:'1–2 mg/kg IV/IO over 1 min',lo:kg*1,hi:kg*2,unit:'mg',note:'Administer over 60 sec. Wait 60 sec for effect. In shock consider 0.5–1 mg/kg.'},
     {name:'Vecuronium (Paralytic)',detail:'0.1 mg/kg IV over 30–60 sec',lo:kg*.1,hi:null,unit:'mg',note:'Onset 60–90 sec. Duration 30–60 min.'},
-    {name:'Rocuronium (Paralytic — alt)',detail:'1 mg/kg IV',lo:kg*1,hi:null,unit:'mg',note:'Onset ~45–60 sec. Extended formulary.'},
+    {name:'Rocuronium (Paralytic — alt)',detail:'1–1.2 mg/kg IV/IO',lo:kg*1,hi:kg*1.2,unit:'mg',note:'Onset 60–90 sec. Extended formulary.'},
     {name:'Midazolam (Post-intubation sedation)',detail:'2.5–5 mg IV every 10–30 min',lo:2.5,hi:5,unit:'mg',note:'Fixed dose — not weight-based.'},
     {name:'Lidocaine (IO site analgesia)',detail:'40 mg IO slow push → 10 mL NS → 20 mg IO',lo:40,hi:null,unit:'mg',note:'Fixed adult dose. Peds: 0.5 mg/kg (max 40 mg).'}
   ];
@@ -261,6 +252,8 @@ var SEARCH_ALIASES={
   tylenol:'acetaminophen', apap:'acetaminophen', asa:'aspirin',
   atrovent:'ipratropium', proventil:'albuterol', ventolin:'albuterol',
   bicarb:'sodium bicarbonate', ntg:'nitroglycerin', nitro:'nitroglycerin',
+  baqsimi:'glucagon', gvoke:'glucagon', glucagen:'glucagon',
+  'racemic epi':'racemic epinephrine', pontocaine:'tetracaine',
   mag:'magnesium', ns:'normal saline', d10:'dextrose', epi:'epinephrine',
   // Linn calls it MAI; the wider world calls it RSI
   rsi:'medication-assisted intubation', dai:'medication-assisted intubation',
@@ -280,14 +273,14 @@ function buildSearchIndex(){
   SECTIONS.protocols.forEach(function(sec){
     sec.items.forEach(function(item){
       idx.push({kind:'protocol',id:item.id,title:item.title,
-        meta:sec.section+' · Scope: '+item.scope,
-        keys:(item.scope||'').toLowerCase()+' '+sec.section.toLowerCase(),
+        meta:sec.section,
+        keys:sec.section.toLowerCase(),
         text:stripHtml(item.body),ref:item});
     });
   });
   FORMULARY.forEach(function(d){
     idx.push({kind:'drug',id:d.name,title:d.name,meta:d.cls,
-      keys:(d.cls+' '+d.scope).toLowerCase(),
+      keys:d.cls.toLowerCase(),
       text:stripHtml(d.dose+' '+(d.ci||'')+' '+(d.warn||'')),ref:d});
   });
   OPS_DATA.forEach(function(o,i){
@@ -397,7 +390,6 @@ function renderSearch(q,animate){
         html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(e.title)+'" data-goto="mai"><div class="card-row"><div class="card-title">'+e.title+'</div><span class="chevron" aria-hidden="true">›</span></div></div>';
       }else{
         html+='<div class="protocol-card '+cardCls(animate,i)+' role="button" tabindex="0" aria-label="'+esc(e.title)+'" data-type="'+kind+'" data-id="'+e.id+'"><div class="card-row"><div class="card-title">'+e.title+'</div>'+
-          (kind==='protocol'?'<span class="scope-pill '+getScopeClass(e.ref.scope)+'">'+e.ref.scope+'</span>':'')+
           '<span class="chevron" aria-hidden="true">›</span></div></div>';
       }
     });
@@ -598,7 +590,7 @@ function showDetail(type,id){
     let item=null,sn='';
     SECTIONS.protocols.forEach(function(s){var f=s.items.find(function(i){return i.id===id;});if(f){item=f;sn=s.section;}});
     if(!item)return;
-    dt.textContent=item.title;ds.textContent=(sn)+' · Scope: '+(item.scope);db.innerHTML=item.body;
+    dt.textContent=item.title;ds.textContent=sn;db.innerHTML=item.body;
   }else if(type==='ops'){
     const item=OPS_DATA[parseInt(id)];if(!item)return;
     dt.textContent=item.title;ds.textContent='Operational Guidelines';db.innerHTML=item.body;

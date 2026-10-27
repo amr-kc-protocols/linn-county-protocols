@@ -40,7 +40,7 @@ Searchable protocol library organized by clinical category:
 Complete drug reference with dosing, contraindications, and warnings for all agents in the 2026 formulary — including **Ketorolac (NEW 2025)** and **Tranexamic Acid / TXA (interim protocol, effective 9/1/2025)**.
 
 ### Scope of Practice
-Visual EMT / AEMT / Paramedic scope comparison across airway, circulation, vascular access, medication routes, trauma, and other skills.
+Visual EMT / AEMT / Paramedic scope comparison across airway, circulation, vascular access, medication routes, trauma, and other skills. This tab is the only place the app shows scope of practice — protocol cards, dose boxes and formulary entries deliberately carry no scope labels, so the quick reference can't drift out of step with the PDF's table.
 
 ### MAI (Medication-Assisted Intubation)
 Step-by-step procedure guide with an integrated **weight-based dose calculator** (kg/lbs) for ketamine, vecuronium, rocuronium, midazolam, and lidocaine IO analgesia.

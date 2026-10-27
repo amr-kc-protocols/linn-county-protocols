@@ -14,7 +14,7 @@ const assert = require('node:assert/strict');
 const { loadApp } = require('./load.js');
 
 const app = loadApp();
-const { fmt, pk, pkr, PT_CALC, BROSELOW, SECTIONS, maiDoses } = app;
+const { fmt, pk, pkr, PT_CALC, BROSELOW, SECTIONS, FORMULARY, maiDoses } = app;
 
 // Neonate through bariatric adult, including every Broselow anchor.
 const WEIGHTS = [3, 4, 5, 6.5, 8.5, 10.5, 13, 16.5, 21, 26.5, 33, 40, 50, 70, 100, 150, 300];
@@ -88,9 +88,10 @@ test('pkr collapses to a single value when both ends are capped', () => {
 test('maiDoses computes the induction and paralytic doses', () => {
   const d = Object.fromEntries(maiDoses(80).map(x => [x.name.split(' (')[0], x]));
   assert.equal(d.Ketamine.lo, 80);          // 1 mg/kg
-  assert.equal(d.Ketamine.hi, 120);         // 1.5 mg/kg
+  assert.equal(d.Ketamine.hi, 160);         // 2 mg/kg
   assert.ok(Math.abs(d.Vecuronium.lo - 8) < 1e-9);  // 0.1 mg/kg
   assert.equal(d.Rocuronium.lo, 80);        // 1 mg/kg
+  assert.ok(Math.abs(d.Rocuronium.hi - 96) < 1e-9);  // 1.2 mg/kg
 });
 
 test('maiDoses leaves fixed doses fixed regardless of weight', () => {
@@ -221,7 +222,6 @@ test('every protocol has the fields the UI renders', () => {
     for (const item of section.items) {
       assert.ok(item.id, `${section.section}: an item has no id`);
       assert.ok(item.title && item.title.trim(), `${item.id} has no title`);
-      assert.ok(item.scope && item.scope.trim(), `${item.id} has no scope`);
       assert.ok(item.body && item.body.trim(), `${item.id} has no body`);
     }
   }
@@ -239,12 +239,19 @@ test('protocol ids are unique', () => {
   assert.deepEqual(dupes, []);
 });
 
-test('every scope string maps to a known badge class', () => {
-  const known = new Set(['scope-all', 'scope-emt', 'scope-aemt', 'scope-pm', 'scope-multi']);
+test('protocols and formulary carry no scope-of-practice labels', () => {
+  // Scope lives only in the Scope of Practice tab (the PDF's own table).
+  // The app is a quick reference: badges and "Scope:" lines on protocols
+  // and drugs drifted out of step with that table, so they were removed.
+  const problems = [];
   for (const section of SECTIONS.protocols) {
     for (const item of section.items) {
-      assert.ok(known.has(app.getScopeClass(item.scope)),
-        `${item.id} scope "${item.scope}" mapped to an unknown class`);
+      if ('scope' in item) problems.push(`${item.id} has a scope field`);
+      if (/Scope:/.test(item.body)) problems.push(`${item.id} body has a "Scope:" label`);
     }
   }
+  for (const d of FORMULARY) {
+    if ('scope' in d) problems.push(`${d.name} has a scope field`);
+  }
+  assert.deepEqual(problems, []);
 });
