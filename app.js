@@ -261,6 +261,8 @@ var SEARCH_ALIASES={
   tylenol:'acetaminophen', apap:'acetaminophen', asa:'aspirin',
   atrovent:'ipratropium', proventil:'albuterol', ventolin:'albuterol',
   bicarb:'sodium bicarbonate', ntg:'nitroglycerin', nitro:'nitroglycerin',
+  baqsimi:'glucagon', gvoke:'glucagon', glucagen:'glucagon',
+  'racemic epi':'racemic epinephrine', pontocaine:'tetracaine',
   mag:'magnesium', ns:'normal saline', d10:'dextrose', epi:'epinephrine',
   // Linn calls it MAI; the wider world calls it RSI
   rsi:'medication-assisted intubation', dai:'medication-assisted intubation',
