@@ -60,7 +60,7 @@ function makeSandbox() {
 // from outside — this final script copies them out by name.
 const EXPORTS = [
   'fmt', 'pk', 'pkr', 'PT_CALC', 'BROSELOW', 'SECTIONS', 'OPS_DATA',
-  'maiDoses', 'getScopeClass', 'FORMULARY', 'SCOPE_DATA',
+  'maiDoses', 'FORMULARY', 'SCOPE_DATA',
   'searchAll', 'stripHtml', 'SEARCH_ALIASES', 'refresherCard', 'renewalCard',
 ];
 
