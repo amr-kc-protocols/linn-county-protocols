@@ -78,6 +78,19 @@
   </div>
   <div class="detail-body" id="detailBody"></div>
 </div>
+<!-- Shown on every launch, from first paint; app.js dismisses it. -->
+<div id="disclaimer" role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle" aria-describedby="disclaimerBody">
+  <div class="disc-card">
+    <div class="disc-kicker">Before you begin</div>
+    <h2 class="disc-title" id="disclaimerTitle">Field Guide &middot; Quick Reference</h2>
+    <div class="disc-body" id="disclaimerBody">
+      <p>This app is a quick-reference field guide to the AMR Linn County EMS Medical Protocols. It is an <b>educational tool</b> and is <b>not</b> meant to replace the print copy of the protocols.</p>
+      <p>Whenever you have a question, refer to the print copy. If this app and the print copy ever differ, the print copy governs.</p>
+    </div>
+    <button type="button" class="disc-btn" id="disclaimerOk">I understand</button>
+    <a class="disc-link" href="LinnProtocols-2026.pdf" target="_blank" rel="noopener">View the full protocols (PDF)</a>
+  </div>
+</div>
 <script src="data.js"></script>
 <script src="app.js"></script>
 <script>
