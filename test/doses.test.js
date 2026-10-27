@@ -88,9 +88,10 @@ test('pkr collapses to a single value when both ends are capped', () => {
 test('maiDoses computes the induction and paralytic doses', () => {
   const d = Object.fromEntries(maiDoses(80).map(x => [x.name.split(' (')[0], x]));
   assert.equal(d.Ketamine.lo, 80);          // 1 mg/kg
-  assert.equal(d.Ketamine.hi, 120);         // 1.5 mg/kg
+  assert.equal(d.Ketamine.hi, 160);         // 2 mg/kg
   assert.ok(Math.abs(d.Vecuronium.lo - 8) < 1e-9);  // 0.1 mg/kg
   assert.equal(d.Rocuronium.lo, 80);        // 1 mg/kg
+  assert.ok(Math.abs(d.Rocuronium.hi - 96) < 1e-9);  // 1.2 mg/kg
 });
 
 test('maiDoses leaves fixed doses fixed regardless of weight', () => {
