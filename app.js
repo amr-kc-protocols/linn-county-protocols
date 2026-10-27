@@ -721,6 +721,30 @@ document.getElementById('content').addEventListener('click',function(e){
   if(card){showDetail(card.dataset.type,card.dataset.id);}
 });
 document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
+// Launch disclaimer: shown on every open, from first paint (index.html).
+// Everything behind it is inert until acknowledged, so taps, keyboard and
+// screen readers stay inside the notice.
+function wireDisclaimer(){
+  var d=document.getElementById('disclaimer'),ok=document.getElementById('disclaimerOk');
+  if(!d||!ok)return;
+  var behind=[].slice.call(document.body.children||[]).filter(function(el){return el!==d&&el.tagName!=='SCRIPT';});
+  behind.forEach(function(el){el.inert=true;});
+  ok.focus();
+  ok.addEventListener('click',function(){
+    d.hidden=true;
+    behind.forEach(function(el){el.inert=false;});
+    var tab=document.querySelector('.nav-tab.active');if(tab)tab.focus();
+  });
+  // Keep Tab cycling between the two controls in the card
+  d.addEventListener('keydown',function(e){
+    if(e.key!=='Tab')return;
+    var f=d.querySelectorAll('button,a[href]');if(!f.length)return;
+    var first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
+}
 renderPatientBar();
 wireTabKeys();
 render(true);
+wireDisclaimer();
