@@ -255,6 +255,8 @@ var SEARCH_ALIASES={
   baqsimi:'glucagon', gvoke:'glucagon', glucagen:'glucagon',
   'racemic epi':'racemic epinephrine', pontocaine:'tetracaine',
   mag:'magnesium', ns:'normal saline', d10:'dextrose', epi:'epinephrine',
+  // Medical control goes by several names
+  dmo:'medical control', olmc:'medical control', 'direct medical oversight':'medical control',
   // Linn calls it MAI; the wider world calls it RSI
   rsi:'medication-assisted intubation', dai:'medication-assisted intubation',
   // Presentations
@@ -504,6 +506,13 @@ function renderHome(){
   h+='<div class="home-hero"><div class="home-hero-title">Linn County EMS</div>'+
      '<div class="home-hero-sub">2026 Standing Orders<br>Dr. Ameet Deshmukh, MD</div></div>';
 
+  // DMO line — front and center, first thing under the hero.
+  h+='<a class="dmo-card" href="tel:'+DMO_TEL+'" aria-label="Call Direct Medical Oversight, '+DMO_NUM+'">'+
+     '<span class="dmo-ic"><svg viewBox="0 0 24 24"><use href="#i-phone"></use></svg></span>'+
+     '<span class="dmo-txt"><span class="dmo-lbl">Medical Control &middot; DMO</span>'+
+     '<span class="dmo-num">'+DMO_NUM+'</span>'+
+     '<span class="dmo-sub">Contact dispatch first. If unsuccessful, call this recorded line &mdash; the operator connects you to the on-call physician.</span></span></a>';
+
   // Patient weight — drives every computed dose in the app
   if(PT){
     h+='<button type="button" class="home-pt set" data-goto="patient"><span class="home-pt-ico">&#9878;</span>'+
@@ -581,6 +590,37 @@ function render(animate){
   else if(currentTab==='mai')renderMAI();
 }
 
+// Turn every "DMO" / "Direct Medical Oversight" / "medical control" in a
+// protocol into a tap-to-call link. Works on text nodes only, so markup and
+// existing links are never touched.
+function linkDmo(root){
+  if(!root||!document.createTreeWalker)return;
+  var re=/\b(DMO|Direct Medical Oversight|[Mm]edical [Cc]ontrol)\b/g;
+  var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+    re.lastIndex=0;
+    if(!re.test(n.nodeValue))return NodeFilter.FILTER_REJECT;
+    for(var e=n.parentNode;e&&e!==root;e=e.parentNode){
+      var t=e.nodeName.toUpperCase();
+      if(t==='A'||t==='BUTTON'||t==='SVG'||(e.classList&&e.classList.contains('block-label')))return NodeFilter.FILTER_REJECT;
+    }
+    return NodeFilter.FILTER_ACCEPT;
+  }});
+  var nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+  nodes.forEach(function(n){
+    var f=document.createDocumentFragment(),txt=n.nodeValue,last=0,m;
+    re.lastIndex=0;
+    while((m=re.exec(txt))){
+      if(m.index>last)f.appendChild(document.createTextNode(txt.slice(last,m.index)));
+      var a=document.createElement('a');
+      a.className='dmo-tel';a.href='tel:'+DMO_TEL;a.textContent=m[0];
+      a.setAttribute('aria-label',m[0]+', call '+DMO_NUM);
+      f.appendChild(a);last=m.index+m[0].length;
+    }
+    if(last<txt.length)f.appendChild(document.createTextNode(txt.slice(last)));
+    n.parentNode.replaceChild(f,n);
+  });
+}
+
 function showDetail(type,id){
   const dv=document.getElementById('detail-view');
   const dt=document.getElementById('detailTitle');
@@ -595,6 +635,7 @@ function showDetail(type,id){
     const item=OPS_DATA[parseInt(id)];if(!item)return;
     dt.textContent=item.title;ds.textContent='Operational Guidelines';db.innerHTML=item.body;
   }
+  linkDmo(db);
   dv.style.display='block';
   dv.scrollTop=0;
   // Send focus into the overlay and remember where to put it back
