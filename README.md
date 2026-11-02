@@ -16,6 +16,17 @@ Landing screen with a tile grid, modelled on the AMR KC field guide. It splits i
 
 The patient-weight tile sits at the top since it drives every computed dose in the app, and reflects the current patient once set. The 2026 PDF and the Quiz also live as icon buttons in the header, keeping the tab bar for app sections only.
 
+### Medical Control (DMO)
+The Direct Medical Oversight line, **1-833-805-9381**, is one tap away everywhere:
+
+- A red **DMO** call button in the header, on every screen.
+- A call card at the top of Home, above patient weight.
+- A **Medical Control (DMO)** protocol first under Universal Guidelines (also under Ops): indications, the call procedure (dispatch first, then the recorded line), closed-loop orders, documentation, and the communication-failure rule from the 2026 PDF.
+- Every "DMO", "Direct Medical Oversight" or "medical control" in protocol text is a tap-to-call link.
+- Searching `dmo`, `olmc` or `medical control` finds it.
+
+The number is defined once, as `DMO_NUM` / `DMO_TEL` in `data.js` (the header link in `index.html` repeats it).
+
 ### Search
 One search across protocols, medications, scope and operations — results are grouped by type and ranked, so a drug name leads with the drug rather than a protocol that happens to mention it. It searches from any tab; clearing it returns you to that tab.
 
