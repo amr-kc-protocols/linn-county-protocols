@@ -8,24 +8,26 @@ function key(t){return'<div class="callout callout-key"><span class="callout-ico
 function note(t){return'<div class="callout callout-note"><span class="callout-icon">📋</span><span>'+t+'</span></div>'}
 function dose(drug,route,amt,n){return'<div class="dose-box"><div class="dose-drug">'+drug+'</div>'+(route?'<div class="dose-route">'+route+'</div>':'')+(amt?'<div class="dose-amount">'+amt+'</div>':'')+(n?'<div class="dose-note">'+n+'</div>':'')+'</div>';}
 
-// Medical control algorithm. The base hospital (the receiving facility) is
-// the first call for orders; the 1-833 DMO line is only the backup when the
+// Medical control algorithm. The base hospital is the first call for orders
+// (structure modelled on the Johnson County EMS System DMO page); the 1-833 DMO line is only the backup when the
 // base hospital can't be reached. The number appears only at that step.
 var DMO_NUM='1-833-805-9381', DMO_TEL='+18338059381';
 function fcStep(n,title,body,cls){return'<div class="fc-step'+(cls?' '+cls:'')+'"><div class="fc-n">'+n+'</div><div class="fc-body"><div class="fc-title">'+title+'</div>'+(body?'<div class="fc-text">'+body+'</div>':'')+'</div></div>';}
 function fcAsk(q,yes){return'<div class="fc-ask"><div class="fc-q">'+q+'</div><div class="fc-yes"><span class="fc-tag">Yes</span>'+yes+'</div><div class="fc-no"><span class="fc-tag">No</span>continue &darr;</div></div>';}
 var FC_ORDERS='Go to <b>Receiving Orders</b> below.';
-var DMO_BODY=b("When to Contact Medical Control",ul(["Orders needed outside of your protocols, or a protocol requires consultation","Clinical uncertainty about the appropriate course of action","Findings or changes in patient condition that may warrant transport to another facility","Stopping resuscitation efforts"])+note("Treatments that are already standing orders do not need a call, unless a question about the planned treatment arises."))
+var DMO_BODY=b("When to Contact Medical Control",ul(["Approval of interventions beyond standing orders","Before deviating from protocol","A protocol specifically requires consultation","A patient refuses EMS care or transport and physician involvement may persuade them","ALS interventions were performed and the patient refuses transport (unless a protocol addresses it)","Stopping resuscitation in situations not covered by the Cardiac Arrest or Termination of Resuscitation protocols","Findings or changes in patient condition that may warrant transport to another facility","Any time you have questions or concerns about patient care"])+note("Treatments that are already standing orders do not need a call, unless a question about the planned treatment arises."))
  +b("Algorithm",'<div class="fc">'
-   +fcStep(1,"Contact the base hospital","The facility you are transporting to. Radio or phone the ED and ask for the physician. An ED nurse may relay the physician&rsquo;s orders.")
+   +fcStep(1,"Contact the base hospital","If you are transporting to a base hospital, radio or phone its ED and ask for the physician. An ED nurse may relay the physician&rsquo;s orders.")
    +fcAsk("Physician orders received?",FC_ORDERS)
-   +fcStep(2,"Ask dispatch to reach medical control","Use when the base hospital does not answer, the physician is unavailable, or radio/phone to the facility fails.")
+   +'<div class="fc-ask"><div class="fc-q">Also continue &darr; when:</div><div class="fc-text">The destination is a non-base hospital, there is no destination yet, the base hospital does not answer, the physician is unavailable, or radio/phone to the facility fails.</div></div>'
+   +fcStep(2,"Ask dispatch to reach medical control","Dispatch directs you to medical control.")
    +fcAsk("Physician orders received?",FC_ORDERS)
-   +fcStep(3,"Backup line &mdash; base hospital unreachable",'<a class="dmo-inline" href="tel:'+DMO_TEL+'" aria-label="Call the backup DMO line, '+DMO_NUM+'">&#9742; '+DMO_NUM+'</a><br>Recorded line. The operator connects you to the on-call physician. Not the first call &mdash; only after steps 1 and 2 fail.',"fc-backup")
+   +fcStep(3,"Backup line &mdash; only if steps 1 and 2 fail",'<a class="dmo-inline" href="tel:'+DMO_TEL+'" aria-label="Call the backup DMO line, '+DMO_NUM+'">&#9742; '+DMO_NUM+'</a><br>Recorded line. The operator connects you to the on-call physician. Not the first call.',"fc-backup")
    +fcAsk("Physician orders received?",FC_ORDERS)
-   +fcStep(4,"No contact within 2 minutes","MCI, radio/telephone failure, or no response: <b>ALL PROTOCOLS BECOME STANDING ORDERS.</b> Treat per protocol and keep trying to reach the base hospital.","fc-stop")
+   +fcStep(4,"No contact within 2 minutes","MCI, radio/telephone failure, or no response: <b>ALL PROTOCOLS BECOME STANDING ORDERS.</b> Treat per protocol and keep trying to reach medical control.","fc-stop")
    +'</div>')
- +b("Receiving Orders",ol(["Use closed-loop communication &mdash; repeat the orders back so orders and questions are clear.","If given orders to perform, continue with the procedure.","Document in the chart who gave the orders (physician&rsquo;s name and facility, or the backup line) and the orders you received."]))
+ +b("Receiving Orders",ol(["Use closed-loop communication &mdash; repeat the orders back so orders and questions are clear.","If given orders to perform, continue with the procedure.","Stay with the same physician: once you reach one, take all further non-standing-order decisions on this call to that physician when possible.","Document in the chart who gave the orders (physician&rsquo;s name and facility, or the backup line) and the orders you received."]))
+ +b("Non-Base Hospital Destination",ol(["Any intervention beyond standing orders must be approved by medical control (steps 2&ndash;3), not by the non-base ED.","Make sure the non-base hospital is told of changes in orders, patient status, or destination &mdash; directly, or by asking medical control to notify them."]))
  +b("After a Communication Failure",ol(["Document that medical control could not be reached and what you tried.","When communication is restored, the record is pulled for review by CES and/or the on-duty supervisor; the Medical Director signs for retroactive approval."]))
  +b("Key Point",key("When in doubt, contact medical control &mdash; base hospital first. Early consultation improves patient outcomes and provides medicolegal protection."));
 

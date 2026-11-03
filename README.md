@@ -19,12 +19,12 @@ The patient-weight tile sits at the top since it drives every computed dose in t
 ### Medical Control (DMO)
 A **Medical Control (DMO)** algorithm, first under Universal Guidelines (also under Ops):
 
-1. Contact the **base hospital** — the facility you are transporting to — for physician orders.
-2. If it can't be reached, ask dispatch to reach medical control.
+1. If transporting to a **base hospital**, contact its ED physician for orders.
+2. If the destination is a non-base hospital, or the base hospital can't be reached, ask dispatch to reach medical control.
 3. Only if both fail, call the **backup line, 1-833-805-9381** (recorded; operator connects to the on-call physician).
 4. No contact within 2 minutes → all protocols become standing orders.
 
-It also covers closed-loop orders, documentation and post-failure review. The backup number is deliberately not the first call: it appears only at step 3. The red **DMO** header button, the Home card, and every "DMO" / "Direct Medical Oversight" / "medical control" in protocol text open the algorithm instead of dialing. Searching `dmo`, `olmc` or `medical control` finds it.
+It also covers when to call, non-base hospital destinations (medical control approves anything beyond standing orders; the non-base hospital is kept informed), staying with the same physician, closed-loop orders, documentation and post-failure review. The base / non-base structure, call list and continuity rule are modelled on the Johnson County EMS System Direct Medical Oversight page; Linn's list of base hospitals still needs to come from the Linn medical director. The backup number is deliberately not the first call: it appears only at step 3. The red **DMO** header button, the Home card, and every "DMO" / "Direct Medical Oversight" / "medical control" in protocol text open the algorithm instead of dialing. Searching `dmo`, `olmc` or `medical control` finds it.
 
 The number is defined once, as `DMO_NUM` / `DMO_TEL` in `data.js`.
 
