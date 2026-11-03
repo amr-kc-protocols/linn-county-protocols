@@ -17,15 +17,16 @@ Landing screen with a tile grid, modelled on the AMR KC field guide. It splits i
 The patient-weight tile sits at the top since it drives every computed dose in the app, and reflects the current patient once set. The 2026 PDF and the Quiz also live as icon buttons in the header, keeping the tab bar for app sections only.
 
 ### Medical Control (DMO)
-The Direct Medical Oversight line, **1-833-805-9381**, is one tap away everywhere:
+A **Medical Control (DMO)** algorithm, first under Universal Guidelines (also under Ops):
 
-- A red **DMO** call button in the header, on every screen.
-- A call card at the top of Home, above patient weight.
-- A **Medical Control (DMO)** protocol first under Universal Guidelines (also under Ops): indications, the call procedure (dispatch first, then the recorded line), closed-loop orders, documentation, and the communication-failure rule from the 2026 PDF.
-- Every "DMO", "Direct Medical Oversight" or "medical control" in protocol text is a tap-to-call link.
-- Searching `dmo`, `olmc` or `medical control` finds it.
+1. Contact the **base hospital** — the facility you are transporting to — for physician orders.
+2. If it can't be reached, ask dispatch to reach medical control.
+3. Only if both fail, call the **backup line, 1-833-805-9381** (recorded; operator connects to the on-call physician).
+4. No contact within 2 minutes → all protocols become standing orders.
 
-The number is defined once, as `DMO_NUM` / `DMO_TEL` in `data.js` (the header link in `index.html` repeats it).
+It also covers closed-loop orders, documentation and post-failure review. The backup number is deliberately not the first call: it appears only at step 3. The red **DMO** header button, the Home card, and every "DMO" / "Direct Medical Oversight" / "medical control" in protocol text open the algorithm instead of dialing. Searching `dmo`, `olmc` or `medical control` finds it.
+
+The number is defined once, as `DMO_NUM` / `DMO_TEL` in `data.js`.
 
 ### Search
 One search across protocols, medications, scope and operations — results are grouped by type and ranked, so a drug name leads with the drug rather than a protocol that happens to mention it. It searches from any tab; clearing it returns you to that tab.

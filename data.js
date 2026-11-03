@@ -8,15 +8,26 @@ function key(t){return'<div class="callout callout-key"><span class="callout-ico
 function note(t){return'<div class="callout callout-note"><span class="callout-icon">📋</span><span>'+t+'</span></div>'}
 function dose(drug,route,amt,n){return'<div class="dose-box"><div class="dose-drug">'+drug+'</div>'+(route?'<div class="dose-route">'+route+'</div>':'')+(amt?'<div class="dose-amount">'+amt+'</div>':'')+(n?'<div class="dose-note">'+n+'</div>':'')+'</div>';}
 
-// Direct Medical Oversight line — shown in the header, on Home, and dialed
-// by every "DMO" / "Direct Medical Oversight" / "medical control" in the text.
+// Medical control algorithm. The base hospital (the receiving facility) is
+// the first call for orders; the 1-833 DMO line is only the backup when the
+// base hospital can't be reached. The number appears only at that step.
 var DMO_NUM='1-833-805-9381', DMO_TEL='+18338059381';
-function dmoCall(){return'<a class="dmo-inline" href="tel:'+DMO_TEL+'" aria-label="Call Direct Medical Oversight, '+DMO_NUM+'">&#9742; '+DMO_NUM+'</a>';}
-var DMO_BODY=b("Call DMO",dmoCall()+'<div class="block-text"><p>Recorded line. The operator connects you to the on-call physician.</p></div>')
- +b("Indications",ul(["Orders needed outside of your protocols","Clinical situation exceeds standing order authority, or a protocol specifically requires consultation","Clinical uncertainty about the appropriate course of action","Findings or changes in patient condition that may warrant transport to another facility","Stopping resuscitation efforts"]))
- +b("Procedure",ol(["Contact dispatch first to direct you to medical control. If that is unsuccessful, call <b>"+DMO_NUM+"</b>.","When receiving orders, use closed-loop communication &mdash; repeat the orders back so orders and questions are clear.","If given orders to perform, continue with the procedure.","Document in the chart that orders were given: the physician's name and the orders you received."]))
- +b("Communication Failure",warn("If you cannot reach DMO (MCI, radio/telephone failure, or no response within 2 minutes), ALL PROTOCOLS BECOME STANDING ORDERS.")+ol(["An ED nurse may relay physician orders when it is impractical for the physician to reach the radio/telephone.","You do not need to contact medical control for treatments that are already standing orders, unless a question about planned treatment arises.","When communication is restored, the record is pulled for review by CES and/or the on-duty supervisor; the Medical Director signs for retroactive approval."]))
- +b("Key Point",key("When in doubt, contact DMO. Early consultation improves patient outcomes and provides medicolegal protection."));
+function fcStep(n,title,body,cls){return'<div class="fc-step'+(cls?' '+cls:'')+'"><div class="fc-n">'+n+'</div><div class="fc-body"><div class="fc-title">'+title+'</div>'+(body?'<div class="fc-text">'+body+'</div>':'')+'</div></div>';}
+function fcAsk(q,yes){return'<div class="fc-ask"><div class="fc-q">'+q+'</div><div class="fc-yes"><span class="fc-tag">Yes</span>'+yes+'</div><div class="fc-no"><span class="fc-tag">No</span>continue &darr;</div></div>';}
+var FC_ORDERS='Go to <b>Receiving Orders</b> below.';
+var DMO_BODY=b("When to Contact Medical Control",ul(["Orders needed outside of your protocols, or a protocol requires consultation","Clinical uncertainty about the appropriate course of action","Findings or changes in patient condition that may warrant transport to another facility","Stopping resuscitation efforts"])+note("Treatments that are already standing orders do not need a call, unless a question about the planned treatment arises."))
+ +b("Algorithm",'<div class="fc">'
+   +fcStep(1,"Contact the base hospital","The facility you are transporting to. Radio or phone the ED and ask for the physician. An ED nurse may relay the physician&rsquo;s orders.")
+   +fcAsk("Physician orders received?",FC_ORDERS)
+   +fcStep(2,"Ask dispatch to reach medical control","Use when the base hospital does not answer, the physician is unavailable, or radio/phone to the facility fails.")
+   +fcAsk("Physician orders received?",FC_ORDERS)
+   +fcStep(3,"Backup line &mdash; base hospital unreachable",'<a class="dmo-inline" href="tel:'+DMO_TEL+'" aria-label="Call the backup DMO line, '+DMO_NUM+'">&#9742; '+DMO_NUM+'</a><br>Recorded line. The operator connects you to the on-call physician. Not the first call &mdash; only after steps 1 and 2 fail.',"fc-backup")
+   +fcAsk("Physician orders received?",FC_ORDERS)
+   +fcStep(4,"No contact within 2 minutes","MCI, radio/telephone failure, or no response: <b>ALL PROTOCOLS BECOME STANDING ORDERS.</b> Treat per protocol and keep trying to reach the base hospital.","fc-stop")
+   +'</div>')
+ +b("Receiving Orders",ol(["Use closed-loop communication &mdash; repeat the orders back so orders and questions are clear.","If given orders to perform, continue with the procedure.","Document in the chart who gave the orders (physician&rsquo;s name and facility, or the backup line) and the orders you received."]))
+ +b("After a Communication Failure",ol(["Document that medical control could not be reached and what you tried.","When communication is restored, the record is pulled for review by CES and/or the on-duty supervisor; the Medical Director signs for retroactive approval."]))
+ +b("Key Point",key("When in doubt, contact medical control &mdash; base hospital first. Early consultation improves patient outcomes and provides medicolegal protection."));
 
 const SECTIONS={protocols:[
 {section:"Universal Guidelines",icon:"📋",items:[
