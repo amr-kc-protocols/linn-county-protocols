@@ -506,12 +506,14 @@ function renderHome(){
   h+='<div class="home-hero"><div class="home-hero-title">Linn County EMS</div>'+
      '<div class="home-hero-sub">2026 Standing Orders<br>Dr. Ameet Deshmukh, MD</div></div>';
 
-  // DMO line — front and center, first thing under the hero.
-  h+='<a class="dmo-card" href="tel:'+DMO_TEL+'" aria-label="Call Direct Medical Oversight, '+DMO_NUM+'">'+
+  // Medical control — front and center. Opens the algorithm rather than
+  // dialing: the base hospital is the first call, the 1-833 line the backup.
+  h+='<button type="button" class="dmo-card" data-type="protocol" data-id="medcontrol" aria-label="Medical control algorithm: base hospital first, backup line if unreachable">'+
      '<span class="dmo-ic"><svg viewBox="0 0 24 24"><use href="#i-phone"></use></svg></span>'+
      '<span class="dmo-txt"><span class="dmo-lbl">Medical Control &middot; DMO</span>'+
-     '<span class="dmo-num">'+DMO_NUM+'</span>'+
-     '<span class="dmo-sub">Contact dispatch first. If unsuccessful, call this recorded line &mdash; the operator connects you to the on-call physician.</span></span></a>';
+     '<span class="dmo-num">Need orders?</span>'+
+     '<span class="dmo-sub">Base hospital first. Backup line only if the base hospital can&rsquo;t be reached.</span></span>'+
+     '<span class="home-pt-arr" aria-hidden="true">&rsaquo;</span></button>';
 
   // Patient weight — drives every computed dose in the app
   if(PT){
@@ -591,8 +593,8 @@ function render(animate){
 }
 
 // Turn every "DMO" / "Direct Medical Oversight" / "medical control" in a
-// protocol into a tap-to-call link. Works on text nodes only, so markup and
-// existing links are never touched.
+// protocol into a link to the medical control algorithm (base hospital
+// first). Works on text nodes only, so markup and links are never touched.
 function linkDmo(root){
   if(!root||!document.createTreeWalker)return;
   var re=/\b(DMO|Direct Medical Oversight|[Mm]edical [Cc]ontrol)\b/g;
@@ -612,8 +614,9 @@ function linkDmo(root){
     while((m=re.exec(txt))){
       if(m.index>last)f.appendChild(document.createTextNode(txt.slice(last,m.index)));
       var a=document.createElement('a');
-      a.className='dmo-tel';a.href='tel:'+DMO_TEL;a.textContent=m[0];
-      a.setAttribute('aria-label',m[0]+', call '+DMO_NUM);
+      a.className='dmo-tel';a.href='#medcontrol';a.textContent=m[0];
+      a.setAttribute('aria-label',m[0]+' — open the medical control algorithm');
+      a.addEventListener('click',function(ev){ev.preventDefault();showDetail('protocol','medcontrol');});
       f.appendChild(a);last=m.index+m[0].length;
     }
     if(last<txt.length)f.appendChild(document.createTextNode(txt.slice(last)));
@@ -635,7 +638,8 @@ function showDetail(type,id){
     const item=OPS_DATA[parseInt(id)];if(!item)return;
     dt.textContent=item.title;ds.textContent='Operational Guidelines';db.innerHTML=item.body;
   }
-  linkDmo(db);
+  // The algorithm itself doesn't link to itself
+  if(!(type==='protocol'&&id==='medcontrol')&&!(type==='ops'&&OPS_DATA[parseInt(id)]&&OPS_DATA[parseInt(id)].body===DMO_BODY))linkDmo(db);
   dv.style.display='block';
   dv.scrollTop=0;
   // Send focus into the overlay and remember where to put it back
@@ -762,6 +766,9 @@ document.getElementById('content').addEventListener('click',function(e){
   if(card){showDetail(card.dataset.type,card.dataset.id);}
 });
 document.addEventListener('keydown', function(e){if(e.key==='Escape'){closeDetail();}});
+// Header DMO button opens the algorithm (base hospital first), not a dialer
+var hdrDmo=document.getElementById('hdrDmo');
+if(hdrDmo)hdrDmo.addEventListener('click',function(){showDetail('protocol','medcontrol');});
 // Launch disclaimer: shown on every open, from first paint (index.html).
 // Everything behind it is inert until acknowledged, so taps, keyboard and
 // screen readers stay inside the notice.
