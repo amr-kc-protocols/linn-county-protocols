@@ -2,12 +2,12 @@
 // ── Linn County EMS Protocols — Service Worker ───────────────
 // Bump CACHE_VERSION any time you deploy updated files so users
 // get fresh content on next visit.
-const CACHE_VERSION = 'linn-ems-v30';
+const CACHE_VERSION = 'linn-ems-v31';
 
 const APP_ASSETS = [
   './',
   './index.html',
-  './quiz.html',
+  './quiz.html', './quiz-bank.js', './quiz-kit.js', './quiz-kit.css',
   './airway-academy.html',
   './narcotic-tracking.html',
   './kansas-relicensure.html',
