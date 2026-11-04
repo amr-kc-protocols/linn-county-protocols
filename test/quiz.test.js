@@ -21,7 +21,7 @@ test('every question is well formed', () => {
       const tag = `${b}:${q.id}`;
       assert.ok(q.q && q.cat && q.exp && q.exp.length > 20, `${tag} text/category/explanation`);
       assert.ok(Number.isInteger(q.ans) && q.ans >= 0 && q.ans < q.opts.length, `${tag} answer index`);
-      if (q.type === 'tf') assert.deepStrictEqual(q.opts, ['True', 'False'], tag);
+      if (q.type === 'tf') assert.strictEqual(JSON.stringify(q.opts), '["True","False"]', tag);
       else {
         assert.strictEqual(q.type, 'mc', tag);
         assert.ok(q.opts.every((o, i) => o.startsWith('ABCDEF'[i] + '. ')), `${tag} lettered options`);
