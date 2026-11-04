@@ -48,6 +48,11 @@ Searchable protocol library organized by clinical category:
 - Pediatric (bronchiolitis, neonate resuscitation, BRUE)
 - Clinical Policies (refusals, consent, restraints)
 
+### Protocol Quiz
+`quiz.html` is built on a small shared engine (`quiz-kit.js`, `quiz-kit.css`) with every question in `quiz-bank.js`. Pick a level (EMT 40, AEMT 65, Paramedic 95 — each level includes the levels below it), a length (10, 25 or all), and optionally one topic. After each answer you see the explanation; the results page breaks the score down by topic and lists every miss. Missed questions are saved on the device (`linn_quiz_v2`) for a "Review missed" round. Answer choices are shuffled each time.
+
+The questions were reviewed against the 2026 Linn PDF in November 2026. `test/quiz.test.js` checks that every question is well formed.
+
 ### Formulary
 Complete drug reference with dosing, contraindications, and warnings for all agents in the 2026 formulary — including **Ketorolac (NEW 2025)** and **Tranexamic Acid / TXA (interim protocol, effective 9/1/2025)**.
 
