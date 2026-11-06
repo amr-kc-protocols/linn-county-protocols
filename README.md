@@ -255,3 +255,10 @@ The app uses a service worker (`sw.js`) to cache all files on first load — pro
 - Full offline support via service worker after first load
 - Optimized for iOS Safari on iPhone (primary use case)
 - All special characters in JavaScript are encoded as HTML entities to ensure safe copy-paste across editors
+
+## Crew login
+Every page loads `auth-gate.js` first, which shows a login screen asking for the same username and password crews use on the Toughbooks, with a hint saying so. A device stays logged in after the first success, and both the KC and Linn sites share the login (same `amr-kc-protocols.github.io` origin).
+
+- The repo is public, so the password is **not** stored anywhere in it: only a slow one-way hash (PBKDF2-SHA256). To change the credentials, follow the comment at the top of `auth-gate.js` and copy the file to both repos.
+- This keeps casual visitors out; it is not real security. The files (including the PDF) are still public on GitHub and can be opened by direct link.
+- Local test servers (`localhost`, `127.0.0.1`) skip the screen so tests run unchanged.
